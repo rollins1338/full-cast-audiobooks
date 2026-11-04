@@ -15,6 +15,13 @@
 - `voices/` — XTTS reference clips + `voice_catalog.json`
 - `output/<book>/` — finished renders; never deleted by cleanup
 
+## Voice references
+
+MP3 reference clips are intentionally **not tracked** (the full library is ~1.3 GB).
+`voices/voice_catalog.json` and `voices/VOICE_LIBRARY.md` list every narrator and sample.
+To fetch the 87 mainstream/Podium narrators, run `python3 download_mainstream_voices.py`.
+For other cast members, use `prepare_reference.py` on a clean 30–60 s speech clip.
+
 The notes below describe the older `audiobook.py` commands.
 
 This repository is command line only. It renders speech locally with Coqui
