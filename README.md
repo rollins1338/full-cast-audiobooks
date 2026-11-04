@@ -32,8 +32,8 @@ There's no cloud TTS, no API keys and no per-word cost.
 <td width="50%" valign="top">
 
 ### 🎭 The right voice on every line
-An LLM reads **the whole book**, labels chapters in parallel, then checks the
-result with a second, independent review. If it's still unsure who said a
+An LLM reads **the whole book**, labels chapters in parallel with ACP
+delegates, then has fresh delegates review the result independently. If it's still unsure who said a
 main-character line, it asks you, with context.
 
 </td>
@@ -264,9 +264,9 @@ wrong all the time, so a model **reads every line**, following
 | 1 | **Extract:** split the EPUB into numbered paragraphs, keeping italics. |
 | 2 | **Bible:** read the whole book and note the narrator, POV style, cast, aliases and how each character talks. |
 | 3 | **Cast:** write `book.json` and stop for you to approve the cast and voices. |
-| 4 | **Label:** parallel subagents label the chapters, following 11 attribution rules. |
+| 4 | **Label:** parallel ACP worker delegates label the chapters, following 11 attribution rules. |
 | 5 | **Verify:** `plan_tools.py verify` until every chapter is clean. |
-| 6 | **Review:** fresh subagents re-check every chapter independently. |
+| 6 | **Review:** fresh ACP reviewer delegates re-check every chapter independently. |
 | 7 | **Ask:** anything still uncertain about the main characters comes to you, with context. |
 | 8 | **Build:** a final pass, then `plan.json`. |
 | 9 | **Report:** the dialogue share per speaker, plus the decisions it made. |

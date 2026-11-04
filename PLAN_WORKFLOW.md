@@ -14,6 +14,29 @@ what has failed before: **you read every line and decide.**
 Run everything from the repo root (the folder containing `plan_tools.py`).
 `<slug>` is a short book name like `my_book`.
 
+### Delegates (ACP)
+
+Steps 4 and 6 hand chapters to **ACP delegates**: separate DeepSeek runs
+started with pi's built-in delegate tools.
+
+| Tool | Use |
+| --- | --- |
+| `acp_delegate` | Start one. Pass `agent` (`"worker"` to label, `"reviewer"` to review), `task` (the full brief), `async: true`, and optionally `timeoutMinutes`. Returns a `runId`. |
+| `acp_delegate_wait` | Collect a result: `runId`, plus `timeout` in ms (e.g. `240000`). If it times out, the delegate is still running, so call it again. |
+| `acp_delegate_cancel` | Stop a delegate that's stuck or was given the wrong brief. |
+
+- **A delegate starts with no context.** It hasn't seen this conversation,
+  the bible or any earlier decision. Its `task` must say everything: which
+  files to read (by path), which chapter IDs it owns, what to write, and
+  what to report back.
+- Start every batch with `async: true` first, then wait on them one by one.
+  Don't run batches one after another.
+- You can't message a delegate while it runs. Anything it needs has to be
+  in the brief; anything you learn later goes in a fix pass or a new
+  delegate.
+- If the delegate tools aren't available, say so. Use whatever subagent
+  tool the client has, or do the batches yourself, one at a time.
+
 ---
 
 ## Step 1: Extract
@@ -183,28 +206,33 @@ automatically:
   `"announce_by": "<speaker>"` to change who says it. The book
   `announcement` plays before chapter 1.
 
-## Step 4: Label the chapters (parallel subagents)
+## Step 4: Label the chapters (parallel ACP delegates)
 
 Once the user has approved the cast, split the chapters into batches of
-about 3–5 and hand each batch to its own subagent (e.g. `acp_delegate`).
-Run several at once.
+about 3–5 and hand each batch to its own **worker** delegate
+(`acp_delegate`, `agent: "worker"`, `async: true`). Start all of them, then
+collect each one with `acp_delegate_wait`.
 
-Each subagent gets:
+Each brief includes (files by path, since the delegate starts with no context):
 - this file
 - `bible.md` and `book.json`
 - its chapter IDs
 - the last ~30 paragraphs of the chapter before its batch, for scene
   continuity
 
-Each subagent reads its chapters in full and writes **only** its own
-`segments/<id>.json` files. Two subagents never share a chapter. It runs
-`verify --chapter <id>` on each chapter until there are 0 errors. It
-reports back:
+Each worker reads its chapters in full and writes **only** its own
+`segments/<id>.json` files. Two workers never share a chapter. It runs
+`verify --chapter <id>` on each chapter until there are 0 errors. Its final
+reply reports:
 - every warning, with its decision
 - any new character it needed
 
-Subagents never edit `book.json` or `bible.md`. You, the main agent, add new
-characters to the cast, then tell the affected subagents.
+Workers never edit `book.json` or `bible.md`. A worker that meets a
+speaker who isn't in the cast still labels them with a clear name, and lists
+them in its report. The resulting "speaker not in cast" errors are the only
+ones it may leave. When the results come back, you, the main agent, add the
+new characters to the cast, then re-run `verify --chapter <id>` on those
+chapters yourself.
 
 **Late additions.** The user approved the cast in step 3, so every character
 added after that is unapproved:
@@ -378,13 +406,15 @@ python3 plan_tools.py verify books/<slug> --chapter 001
 Don't move to the next chapter until its verify shows `0 errors, 0
 unreviewed warnings`.
 
-## Step 6: Independent review (second check, parallel subagents)
+## Step 6: Independent review (second check, parallel ACP delegates)
 
-Every chapter is checked a second time by a **fresh** subagent: never the
-one that labelled it. It doesn't see the labeller's reasoning, only the
-result.
+Every chapter is checked a second time by a **fresh reviewer** delegate
+(`acp_delegate`, `agent: "reviewer"`, `async: true`): never the worker that
+labelled it. It doesn't see the labeller's reasoning, only the result.
+Reviewers read whole chapters slowly, so give them a long limit (e.g.
+`timeoutMinutes: 75`).
 
-1. Give each reviewer this file, `bible.md`, `book.json`, its chapter
+1. Each reviewer's brief names this file, `bible.md`, `book.json`, its chapter
    IDs, and their `segments/<id>.json`. Batch the chapters the same way as
    step 4, with different pairings.
 2. The reviewer reads the source chapter in full from `extract/` and
@@ -560,10 +590,11 @@ Then render. You don't start this; the user does:
 
 - The main agent reads the book once fully (step 2) and stays in charge:
   it owns `book.json`, `bible.md`, `reviewed.json` and every final
-  decision. Subagents do the chapter-by-chapter reading in steps 4 and 6.
-- Labelling and review subagents each re-read only their own chapters,
+  decision. ACP delegates do the chapter-by-chapter reading in steps 4
+  and 6.
+- Workers and reviewers each re-read only their own chapters,
   plus the end of the previous chapter for scene continuity.
-- Never let two subagents write the same file.
+- Never let two delegates write the same file.
 - Write each chapter file in one go, then run verify. Fix everything in one
   edit pass, then verify again.
 - Don't print whole extract files back into the chat. Read them with your
