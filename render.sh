@@ -8,7 +8,7 @@
 #   --check              validate the plan, show cast/stats/time estimate, render nothing
 #   --audition           render 2 lines per speaker into one file to hear the cast first
 #   --chapters 1-3,7     only these chapters
-#   --voice "Jesse=Corvin King"   swap a speaker's voice (repeatable); only their lines re-render
+#   --voice "Daniel=Corvin King"   swap a speaker's voice (repeatable); only their lines re-render
 #   --out DIR            output folder (default: output/<book name>)
 #   --format mp3         mp3 instead of lossless wav
 #   --plain              plain log lines instead of the live dashboard (for nohup / logs)

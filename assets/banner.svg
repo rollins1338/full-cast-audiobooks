@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-label="Full Cast Audiobooks: turn any EPUB into a multi-voice audiobook on your own GPU">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#161335"/>
+      <stop offset=".55" stop-color="#0d0b20"/>
+      <stop offset="1" stop-color="#0a0a14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".18" cy=".35" r=".55">
+      <stop offset="0" stop-color="#7c3aed" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx=".9" cy=".9" r=".5">
+      <stop offset="0" stop-color="#0891b2" stop-opacity=".25"/>
+      <stop offset="1" stop-color="#0891b2" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity=".05"/>
+    </pattern>
+    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f5f3ff"/>
+      <stop offset="1" stop-color="#c4b5fd"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".12" stop-color="#fff" stop-opacity="1"/>
+      <stop offset=".88" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="edge"><rect width="1280" height="360" fill="url(#fade)"/></mask>
+    <radialGradient id="core" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#7c3aed" stop-opacity=".45"/><stop offset="1" stop-color="#7c3aed" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1280" height="360" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="360" rx="24" fill="url(#glow)"/>
+  <rect width="1280" height="360" rx="24" fill="url(#glow2)"/>
+  <rect width="1280" height="360" rx="24" fill="url(#dots)"/>
+
+  <!-- waveform along the bottom: each stretch is a different speaker -->
+  <g mask="url(#edge)" stroke-linecap="round" stroke-width="6" opacity=".55">
+    <g stroke="#22d3ee"><line x1="40" y1="318" x2="40" y2="302"/><line x1="52" y1="324" x2="52" y2="296"/><line x1="64" y1="320" x2="64" y2="300"/><line x1="76" y1="328" x2="76" y2="292"/><line x1="88" y1="316" x2="88" y2="304"/><line x1="100" y1="326" x2="100" y2="294"/><line x1="112" y1="322" x2="112" y2="298"/><line x1="124" y1="330" x2="124" y2="290"/><line x1="136" y1="318" x2="136" y2="302"/><line x1="148" y1="324" x2="148" y2="296"/><line x1="160" y1="314" x2="160" y2="306"/><line x1="172" y1="326" x2="172" y2="294"/><line x1="184" y1="320" x2="184" y2="300"/><line x1="196" y1="316" x2="196" y2="304"/></g>
+    <g stroke="#a78bfa"><line x1="220" y1="332" x2="220" y2="288"/><line x1="232" y1="324" x2="232" y2="296"/><line x1="244" y1="336" x2="244" y2="284"/><line x1="256" y1="320" x2="256" y2="300"/><line x1="268" y1="330" x2="268" y2="290"/><line x1="280" y1="326" x2="280" y2="294"/><line x1="292" y1="338" x2="292" y2="282"/><line x1="304" y1="322" x2="304" y2="298"/><line x1="316" y1="330" x2="316" y2="290"/><line x1="328" y1="318" x2="328" y2="302"/><line x1="340" y1="334" x2="340" y2="286"/><line x1="352" y1="324" x2="352" y2="296"/><line x1="364" y1="328" x2="364" y2="292"/><line x1="376" y1="316" x2="376" y2="304"/><line x1="388" y1="326" x2="388" y2="294"/><line x1="400" y1="320" x2="400" y2="300"/><line x1="412" y1="332" x2="412" y2="288"/><line x1="424" y1="318" x2="424" y2="302"/></g>
+    <g stroke="#f472b6"><line x1="448" y1="322" x2="448" y2="298"/><line x1="460" y1="334" x2="460" y2="286"/><line x1="472" y1="326" x2="472" y2="294"/><line x1="484" y1="338" x2="484" y2="282"/><line x1="496" y1="320" x2="496" y2="300"/><line x1="508" y1="330" x2="508" y2="290"/><line x1="520" y1="324" x2="520" y2="296"/><line x1="532" y1="316" x2="532" y2="304"/><line x1="544" y1="328" x2="544" y2="292"/><line x1="556" y1="334" x2="556" y2="286"/><line x1="568" y1="322" x2="568" y2="298"/><line x1="580" y1="318" x2="580" y2="302"/></g>
+    <g stroke="#22d3ee"><line x1="604" y1="326" x2="604" y2="294"/><line x1="616" y1="320" x2="616" y2="300"/><line x1="628" y1="332" x2="628" y2="288"/><line x1="640" y1="316" x2="640" y2="304"/><line x1="652" y1="328" x2="652" y2="292"/><line x1="664" y1="322" x2="664" y2="298"/><line x1="676" y1="336" x2="676" y2="284"/><line x1="688" y1="318" x2="688" y2="302"/><line x1="700" y1="326" x2="700" y2="294"/><line x1="712" y1="320" x2="712" y2="300"/></g>
+    <g stroke="#fbbf24"><line x1="736" y1="330" x2="736" y2="290"/><line x1="748" y1="322" x2="748" y2="298"/><line x1="760" y1="336" x2="760" y2="284"/><line x1="772" y1="326" x2="772" y2="294"/><line x1="784" y1="318" x2="784" y2="302"/><line x1="796" y1="332" x2="796" y2="288"/><line x1="808" y1="324" x2="808" y2="296"/><line x1="820" y1="316" x2="820" y2="304"/><line x1="832" y1="328" x2="832" y2="292"/></g>
+    <g stroke="#a78bfa"><line x1="856" y1="320" x2="856" y2="300"/><line x1="868" y1="334" x2="868" y2="286"/><line x1="880" y1="326" x2="880" y2="294"/><line x1="892" y1="338" x2="892" y2="282"/><line x1="904" y1="322" x2="904" y2="298"/><line x1="916" y1="330" x2="916" y2="290"/><line x1="928" y1="318" x2="928" y2="302"/><line x1="940" y1="328" x2="940" y2="292"/><line x1="952" y1="324" x2="952" y2="296"/><line x1="964" y1="334" x2="964" y2="286"/><line x1="976" y1="320" x2="976" y2="300"/><line x1="988" y1="316" x2="988" y2="304"/></g>
+    <g stroke="#34d399"><line x1="1012" y1="326" x2="1012" y2="294"/><line x1="1024" y1="320" x2="1024" y2="300"/><line x1="1036" y1="332" x2="1036" y2="288"/><line x1="1048" y1="318" x2="1048" y2="302"/><line x1="1060" y1="328" x2="1060" y2="292"/><line x1="1072" y1="322" x2="1072" y2="298"/></g>
+    <g stroke="#22d3ee"><line x1="1096" y1="330" x2="1096" y2="290"/><line x1="1108" y1="320" x2="1108" y2="300"/><line x1="1120" y1="334" x2="1120" y2="286"/><line x1="1132" y1="324" x2="1132" y2="296"/><line x1="1144" y1="316" x2="1144" y2="304"/><line x1="1156" y1="328" x2="1156" y2="292"/><line x1="1168" y1="322" x2="1168" y2="298"/><line x1="1180" y1="318" x2="1180" y2="302"/><line x1="1192" y1="326" x2="1192" y2="294"/><line x1="1204" y1="320" x2="1204" y2="300"/><line x1="1216" y1="314" x2="1216" y2="306"/><line x1="1228" y1="324" x2="1228" y2="296"/><line x1="1240" y1="318" x2="1240" y2="302"/></g>
+  </g>
+
+  <!-- logo mark -->
+  <g transform="translate(58 46) scale(1.72)"><circle cx="64" cy="64" r="40" fill="url(#core)"/><g stroke-width="4" stroke-linecap="round"><line x1="64.0" y1="24.0" x2="64.0" y2="9.8" stroke="#22d3ee"/><line x1="69.2" y1="24.3" x2="70.8" y2="12.7" stroke="#2ecaef"/><line x1="74.4" y1="25.4" x2="76.8" y2="16.1" stroke="#3ac1f0"/><line x1="79.3" y1="27.0" x2="82.9" y2="18.3" stroke="#46b8f2"/><line x1="84.0" y1="29.4" x2="87.9" y2="22.6" stroke="#52b0f3"/><line x1="88.4" y1="32.3" x2="92.3" y2="27.2" stroke="#5da7f4"/><line x1="92.3" y1="35.7" x2="96.6" y2="31.4" stroke="#699ef6"/><line x1="95.7" y1="39.6" x2="100.6" y2="35.9" stroke="#7595f7"/><line x1="98.6" y1="44.0" x2="104.4" y2="40.7" stroke="#818cf8"/><line x1="101.0" y1="48.7" x2="107.9" y2="45.8" stroke="#898bf8"/><line x1="102.6" y1="53.6" x2="111.9" y2="51.2" stroke="#918af9"/><line x1="103.7" y1="58.8" x2="114.5" y2="57.4" stroke="#9989fa"/><line x1="104.0" y1="64.0" x2="113.9" y2="64.0" stroke="#a088fa"/><line x1="103.7" y1="69.2" x2="117.0" y2="71.0" stroke="#a887fa"/><line x1="102.6" y1="74.4" x2="116.9" y2="78.2" stroke="#b086fb"/><line x1="101.0" y1="79.3" x2="112.4" y2="84.1" stroke="#b885fc"/><line x1="98.6" y1="84.0" x2="109.4" y2="90.2" stroke="#c084fc"/><line x1="95.7" y1="88.4" x2="106.0" y2="96.2" stroke="#c682f3"/><line x1="92.3" y1="92.3" x2="99.8" y2="99.8" stroke="#cd80ea"/><line x1="88.4" y1="95.7" x2="93.3" y2="102.2" stroke="#d47de2"/><line x1="84.0" y1="98.6" x2="87.9" y2="105.4" stroke="#da7bd9"/><line x1="79.3" y1="101.0" x2="81.9" y2="107.2" stroke="#e079d0"/><line x1="74.4" y1="102.6" x2="75.9" y2="108.5" stroke="#e776c8"/><line x1="69.2" y1="103.7" x2="70.0" y2="109.7" stroke="#ee74bf"/><line x1="64.0" y1="104.0" x2="64.0" y2="110.8" stroke="#f472b6"/><line x1="58.8" y1="103.7" x2="57.8" y2="111.3" stroke="#f57ca4"/><line x1="53.6" y1="102.6" x2="51.5" y2="110.8" stroke="#f68592"/><line x1="48.7" y1="101.0" x2="44.4" y2="111.3" stroke="#f78f7f"/><line x1="44.0" y1="98.6" x2="37.7" y2="109.6" stroke="#f8986d"/><line x1="39.6" y1="95.7" x2="32.9" y2="104.5" stroke="#f8a25b"/><line x1="35.7" y1="92.3" x2="26.0" y2="102.0" stroke="#f9ac48"/><line x1="32.3" y1="88.4" x2="20.5" y2="97.4" stroke="#fab536"/><line x1="29.4" y1="84.0" x2="18.6" y2="90.2" stroke="#fbbf24"/><line x1="27.0" y1="79.3" x2="16.9" y2="83.5" stroke="#e2c233"/><line x1="25.4" y1="74.4" x2="14.5" y2="77.3" stroke="#c9c441"/><line x1="24.3" y1="69.2" x2="15.2" y2="70.4" stroke="#b0c650"/><line x1="24.0" y1="64.0" x2="16.9" y2="64.0" stroke="#98c95e"/><line x1="24.3" y1="58.8" x2="17.7" y2="57.9" stroke="#7fcc6d"/><line x1="25.4" y1="53.6" x2="19.5" y2="52.1" stroke="#66ce7c"/><line x1="27.0" y1="48.7" x2="21.4" y2="46.4" stroke="#4dd08a"/><line x1="29.4" y1="44.0" x2="23.6" y2="40.7" stroke="#34d399"/><line x1="32.3" y1="39.6" x2="25.9" y2="34.8" stroke="#32d3a4"/><line x1="35.7" y1="35.7" x2="29.2" y2="29.2" stroke="#30d3ae"/><line x1="39.6" y1="32.3" x2="34.0" y2="24.9" stroke="#2dd3b9"/><line x1="44.0" y1="29.4" x2="37.7" y2="18.4" stroke="#2bd3c4"/><line x1="48.7" y1="27.0" x2="43.3" y2="14.1" stroke="#29d3ce"/><line x1="53.6" y1="25.4" x2="50.6" y2="13.8" stroke="#26d3d9"/><line x1="58.8" y1="24.3" x2="57.0" y2="11.1" stroke="#24d3e3"/></g><g fill="none" stroke="#fff" stroke-width="4.2" stroke-linecap="round" transform="translate(64 66) scale(1.22) translate(-64 -66)"><path d="M64 82 C56 76 46 75 38 77" stroke-opacity=".4"/><path d="M64 82 C72 76 82 75 90 77" stroke-opacity=".4"/><path d="M64 82 C57 72 48 68 40 68" stroke-opacity=".68"/><path d="M64 82 C71 72 80 68 88 68" stroke-opacity=".68"/><path d="M64 82 C59 68 52 61 45 58"/><path d="M64 82 C69 68 76 61 83 58"/><path d="M64 82 V51"/></g></g>
+
+  <g font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <text x="290" y="118" fill="#a78bfa" font-size="18" font-weight="700" letter-spacing="4">LOCAL · VOICE CLONING · XTTS-v2</text>
+    <text x="288" y="178" fill="#ffffff" font-size="64" font-weight="800" letter-spacing="-1.5">Full Cast Audiobooks</text>
+    <text x="290" y="222" fill="#c7c4e0" font-size="24">Turn any EPUB into a full-cast audiobook, on your own GPU.</text>
+    <!-- feature chips -->
+    <g font-size="15" font-weight="600">
+      <rect x="290" y="244" width="172" height="30" rx="15" fill="#22d3ee" fill-opacity=".14" stroke="#22d3ee" stroke-opacity=".5"/>
+      <circle cx="308" cy="259" r="5" fill="#22d3ee"/><text x="320" y="264" fill="#a5f3fc" textLength="124" lengthAdjust="spacingAndGlyphs">Clones any voice</text>
+      <rect x="472" y="244" width="160" height="30" rx="15" fill="#a78bfa" fill-opacity=".14" stroke="#a78bfa" stroke-opacity=".5"/>
+      <circle cx="490" cy="259" r="5" fill="#a78bfa"/><text x="502" y="264" fill="#ddd6fe" textLength="112" lengthAdjust="spacingAndGlyphs">Every line read</text>
+      <rect x="642" y="244" width="180" height="30" rx="15" fill="#f472b6" fill-opacity=".14" stroke="#f472b6" stroke-opacity=".5"/>
+      <circle cx="660" cy="259" r="5" fill="#f472b6"/><text x="672" y="264" fill="#fbcfe8" textLength="132" lengthAdjust="spacingAndGlyphs">1st &amp; 3rd person</text>
+      <rect x="832" y="244" width="128" height="30" rx="15" fill="#fbbf24" fill-opacity=".14" stroke="#fbbf24" stroke-opacity=".5"/>
+      <circle cx="850" cy="259" r="5" fill="#fbbf24"/><text x="862" y="264" fill="#fde68a" textLength="80" lengthAdjust="spacingAndGlyphs">Resumable</text>
+      <rect x="970" y="244" width="126" height="30" rx="15" fill="#34d399" fill-opacity=".14" stroke="#34d399" stroke-opacity=".5"/>
+      <circle cx="988" cy="259" r="5" fill="#34d399"/><text x="1000" y="264" fill="#a7f3d0" textLength="78" lengthAdjust="spacingAndGlyphs">ACX · M4B</text>
+    </g>
+  </g>
+</svg>

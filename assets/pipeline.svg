@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="300" viewBox="0 0 1280 300" role="img" aria-label="Pipeline: EPUB, extract, label, verify and build, render, master">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14122e"/><stop offset="1" stop-color="#0a0a14"/></linearGradient>
+<marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#6b6894"/></marker></defs>
+<rect width="1280" height="300" rx="20" fill="url(#bg)"/>
+<g font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+<rect x="36" y="46" width="182" height="150" rx="16" fill="#ffffff" fill-opacity=".04" stroke="#94a3b8" stroke-opacity=".55" stroke-width="1.5"/>
+<rect x="36" y="46" width="182" height="5" rx="2.5" fill="#94a3b8"/>
+<circle cx="66" cy="86" r="15" fill="#94a3b8" fill-opacity=".18" stroke="#94a3b8"/><text x="66" y="92" text-anchor="middle" fill="#94a3b8" font-size="16" font-weight="800">1</text>
+<text x="54" y="136" fill="#ffffff" font-size="21" font-weight="700">EPUB</text>
+<text x="54" y="161" fill="#a9a6c9" font-size="14">Drop the book</text>
+<text x="54" y="181" fill="#a9a6c9" font-size="14">into sources/</text>
+<line x1="221" y1="121" x2="239" y2="121" stroke="#6b6894" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="242" y="46" width="182" height="150" rx="16" fill="#ffffff" fill-opacity=".04" stroke="#22d3ee" stroke-opacity=".55" stroke-width="1.5"/>
+<rect x="242" y="46" width="182" height="5" rx="2.5" fill="#22d3ee"/>
+<circle cx="272" cy="86" r="15" fill="#22d3ee" fill-opacity=".18" stroke="#22d3ee"/><text x="272" y="92" text-anchor="middle" fill="#22d3ee" font-size="16" font-weight="800">2</text>
+<text x="260" y="136" fill="#ffffff" font-size="21" font-weight="700">Extract</text>
+<text x="260" y="161" fill="#a9a6c9" font-size="14">plan_tools extract</text>
+<text x="260" y="181" fill="#a9a6c9" font-size="14">numbered paragraphs</text>
+<line x1="427" y1="121" x2="445" y2="121" stroke="#6b6894" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="448" y="46" width="182" height="150" rx="16" fill="#ffffff" fill-opacity=".04" stroke="#a78bfa" stroke-opacity=".55" stroke-width="1.5"/>
+<rect x="448" y="46" width="182" height="5" rx="2.5" fill="#a78bfa"/>
+<circle cx="478" cy="86" r="15" fill="#a78bfa" fill-opacity=".18" stroke="#a78bfa"/><text x="478" y="92" text-anchor="middle" fill="#a78bfa" font-size="16" font-weight="800">3</text>
+<text x="466" y="136" fill="#ffffff" font-size="21" font-weight="700">Label</text>
+<text x="466" y="161" fill="#a9a6c9" font-size="14">DeepSeek reads every</text>
+<text x="466" y="181" fill="#a9a6c9" font-size="14">line · 2 review passes</text>
+<line x1="633" y1="121" x2="651" y2="121" stroke="#6b6894" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="654" y="46" width="182" height="150" rx="16" fill="#ffffff" fill-opacity=".04" stroke="#f472b6" stroke-opacity=".55" stroke-width="1.5"/>
+<rect x="654" y="46" width="182" height="5" rx="2.5" fill="#f472b6"/>
+<circle cx="684" cy="86" r="15" fill="#f472b6" fill-opacity=".18" stroke="#f472b6"/><text x="684" y="92" text-anchor="middle" fill="#f472b6" font-size="16" font-weight="800">4</text>
+<text x="672" y="136" fill="#ffffff" font-size="21" font-weight="700">Verify &amp; build</text>
+<text x="672" y="161" fill="#a9a6c9" font-size="14">text + speaker checks</text>
+<text x="672" y="181" fill="#a9a6c9" font-size="14">→ plan.json</text>
+<line x1="839" y1="121" x2="857" y2="121" stroke="#6b6894" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="860" y="46" width="182" height="150" rx="16" fill="#ffffff" fill-opacity=".04" stroke="#fbbf24" stroke-opacity=".55" stroke-width="1.5"/>
+<rect x="860" y="46" width="182" height="5" rx="2.5" fill="#fbbf24"/>
+<circle cx="890" cy="86" r="15" fill="#fbbf24" fill-opacity=".18" stroke="#fbbf24"/><text x="890" y="92" text-anchor="middle" fill="#fbbf24" font-size="16" font-weight="800">5</text>
+<text x="878" y="136" fill="#ffffff" font-size="21" font-weight="700">Render</text>
+<text x="878" y="161" fill="#a9a6c9" font-size="14">XTTS-v2 on your GPU</text>
+<text x="878" y="181" fill="#a9a6c9" font-size="14">resumable · self-healing</text>
+<line x1="1045" y1="121" x2="1063" y2="121" stroke="#6b6894" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="1066" y="46" width="182" height="150" rx="16" fill="#ffffff" fill-opacity=".04" stroke="#34d399" stroke-opacity=".55" stroke-width="1.5"/>
+<rect x="1066" y="46" width="182" height="5" rx="2.5" fill="#34d399"/>
+<circle cx="1096" cy="86" r="15" fill="#34d399" fill-opacity=".18" stroke="#34d399"/><text x="1096" y="92" text-anchor="middle" fill="#34d399" font-size="16" font-weight="800">6</text>
+<text x="1084" y="136" fill="#ffffff" font-size="21" font-weight="700">Master</text>
+<text x="1084" y="161" fill="#a9a6c9" font-size="14">ACX loudness</text>
+<text x="1084" y="181" fill="#a9a6c9" font-size="14">→ WAV + M4B</text>
+<path d="M248 222 L248 232 L830 232 L830 222" fill="none" stroke="#c4b5fd" stroke-opacity=".6" stroke-width="1.5"/>
+<text x="539.0" y="262" text-anchor="middle" fill="#c4b5fd" font-size="15" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">PLAN_WORKFLOW.md  +  plan_tools.py</text>
+<path d="M866 222 L866 232 L1036 232 L1036 222" fill="none" stroke="#fde68a" stroke-opacity=".6" stroke-width="1.5"/>
+<text x="951.0" y="262" text-anchor="middle" fill="#fde68a" font-size="15" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">render.sh</text>
+<path d="M1072 222 L1072 232 L1242 232 L1242 222" fill="none" stroke="#a7f3d0" stroke-opacity=".6" stroke-width="1.5"/>
+<text x="1157.0" y="262" text-anchor="middle" fill="#a7f3d0" font-size="15" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">wav_merger/</text>
+</g></svg>

@@ -876,7 +876,7 @@ def main():
     ap.add_argument("--audition", action="store_true", help="render 2 lines per speaker into one file")
     ap.add_argument("--chapters", help="e.g. 1-3,7 (default all)")
     ap.add_argument("--voice", action="append", default=[], metavar="SPEAKER=VOICE",
-                    help="override a speaker's voice, e.g. 'Jesse=Corvin King' (repeatable)")
+                    help="override a speaker's voice, e.g. 'Daniel=Corvin King' (repeatable)")
     ap.add_argument("--format", choices=("wav", "mp3"), default="wav")
     ap.add_argument("--max-chars", type=int, default=200)
     ap.add_argument("--retries", type=int, default=2, help="re-rolls for implausible-length chunks")
