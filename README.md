@@ -53,11 +53,20 @@ python3 download_mainstream_voices.py
 `voices/voice_catalog.json` and `voices/VOICE_LIBRARY.md` list what is included.
 For a one-off clip, `prepare_reference.py` cleans and normalizes it.
 
-### 4. Add a book and make a plan
+### 4. Add a book and make `plan.json`
 
-Put the EPUB in `sources/` (ignored by git), then follow
-[`PLAN_WORKFLOW.md`](PLAN_WORKFLOW.md). The planner uses `plan_tools.py` to
-extract chapters, assign speakers and validate the result:
+Put the EPUB in `sources/` (ignored by git).
+
+**Use DeepSeek Flash to build the plan.** Give it the EPUB and tell it to follow
+[`PLAN_WORKFLOW.md`](PLAN_WORKFLOW.md) exactly:
+
+> Read `PLAN_WORKFLOW.md` and turn this EPUB into `books/<slug>/plan.json`.
+> Read every line and assign the correct speaker; do not use regex, heuristics,
+> or alternating-turn guessing.
+
+`PLAN_WORKFLOW.md` is the important part: it defines the speaker-labelling rules,
+the `plan_tools.py` commands, and the verification steps. DeepSeek Flash should
+use those tools rather than inventing its own extraction script.
 
 ```bash
 .venv/bin/python plan_tools.py --help
