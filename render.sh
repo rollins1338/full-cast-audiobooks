@@ -22,7 +22,15 @@
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PY="${FULLCAST_PYTHON:-/home/rxxfxx/bots/dramione/.venv/bin/python}"
+if [[ -n "${FULLCAST_PYTHON:-}" ]]; then
+  PY="$FULLCAST_PYTHON"
+elif [[ -x "$HERE/.venv/bin/python" ]]; then
+  PY="$HERE/.venv/bin/python"
+elif command -v python3.12 >/dev/null 2>&1; then
+  PY="$(command -v python3.12)"
+else
+  PY="$(command -v python3)"
+fi
 ENGINE="$HERE/render_engine.py"
 
 # Started from the file manager or a desktop icon (no terminal): reopen in one.

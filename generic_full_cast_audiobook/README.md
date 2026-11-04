@@ -2,8 +2,8 @@
 
 FIRST RUN = SAMPLE ONLY.
 
-The generator uses the shared virtual environment at
-`/home/rxxfxx/bots/dramione/.venv` and local XTTS-v2 synthesis (no cloud API).
+The generator uses the repo's `.venv` and local XTTS-v2 synthesis (no cloud API).
+Create it with `python3.12 -m venv .venv && pip install -r requirements.txt`.
 
 1. Put your four voice samples in `voices/`:
    Savannah Peachwood.mp3
@@ -14,11 +14,11 @@ The generator uses the shared virtual environment at
 2. Put an EPUB anywhere convenient.
 
 3. Make a short sample plan:
-   /home/rxxfxx/bots/dramione/.venv/bin/python \
+   .venv/bin/python \
      generic_full_cast_audiobook/make_sample_plan.py "Solaris(1).epub"
 
 4. Render ONLY the sample:
-   /home/rxxfxx/bots/dramione/.venv/bin/python \
+   .venv/bin/python \
      generic_full_cast_audiobook/render_sample.py sample_plan.json output/sample.mp3
 
 On the first render, Coqui asks you to accept either its commercial license or
@@ -35,7 +35,7 @@ The full-book renderer expects a reviewed chapter plan in the format described
 in `render_book.py`:
 
 ```bash
-/home/rxxfxx/bots/dramione/.venv/bin/python \
+.venv/bin/python \
   generic_full_cast_audiobook/render_book.py reviewed_plan.json output/chapters
 ```
 

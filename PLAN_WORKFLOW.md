@@ -7,9 +7,8 @@ You are turning an EPUB into a speaker-labelled plan that `render.sh` renders.
 extraction or attribution script. Regex/heuristic speaker guessing is exactly
 what has failed before: **you read every line and decide.**
 
-Run everything from the repo root:
-`/home/rxxfxx/Downloads/Full Cast Audiobooks`. `<slug>` is a short book
-name like `my_book`.
+Run everything from the repo root (the folder containing `plan_tools.py`).
+`<slug>` is a short book name like `my_book`.
 
 ---
 
