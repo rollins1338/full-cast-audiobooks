@@ -17,19 +17,32 @@
 # Safe to stop at any time (Ctrl+C). Run the same command again to resume.
 # Crashes restart automatically (up to 5 times) and continue from the last saved
 # line; damaged files from a crash or power cut are detected and redone.
-# Env: FULLCAST_PYTHON overrides the Python interpreter;
+# Env: FULLCAST_PYTHON overrides the Python interpreter (default: the first of
+#      .venv, ~/bots/dramione/.venv, python3.12, python3 that has the libraries);
 #      FULLCAST_RESTARTS / FULLCAST_RESTART_DELAY tune auto-restart (default 5 / 20s).
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Use the first interpreter that actually has the libraries (a cheap find_spec
+# check, no imports), so an empty venv can't shadow a working one.
+has_deps() {
+  [[ -x "$1" ]] && "$1" -c 'import importlib.util as u,sys
+sys.exit(any(u.find_spec(m) is None for m in ("TTS","torch","rich","soundfile","numpy")))' 2>/dev/null
+}
 if [[ -n "${FULLCAST_PYTHON:-}" ]]; then
   PY="$FULLCAST_PYTHON"
-elif [[ -x "$HERE/.venv/bin/python" ]]; then
-  PY="$HERE/.venv/bin/python"
-elif command -v python3.12 >/dev/null 2>&1; then
-  PY="$(command -v python3.12)"
 else
-  PY="$(command -v python3)"
+  PY=""
+  for cand in "$HERE/.venv/bin/python" "$HOME/bots/dramione/.venv/bin/python" \
+              "$(command -v python3.12 2>/dev/null)" "$(command -v python3 2>/dev/null)"; do
+    if has_deps "$cand"; then PY="$cand"; break; fi
+  done
+  # nothing has them: fall back to the first interpreter found so preflight can say what's missing
+  if [[ -z "$PY" ]]; then
+    for cand in "$HERE/.venv/bin/python" "$(command -v python3.12 2>/dev/null)" "$(command -v python3 2>/dev/null)"; do
+      [[ -x "$cand" ]] && { PY="$cand"; break; }
+    done
+  fi
 fi
 ENGINE="$HERE/render_engine.py"
 
