@@ -1,0 +1,9 @@
+output/
+__pycache__/
+*.py[cod]
+books/*/extract/
+voices/*.mp3
+voices/alt/
+voices/raw/
+sources/
+.pi/

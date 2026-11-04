@@ -1,0 +1,2003 @@
+{
+  "Emily Woo Zeller": {
+    "primary": "Emily Woo Zeller.mp3",
+    "samples": [
+      {
+        "file": "alt/Emily Woo Zeller/01 - Where the Lost Girls Go.mp3",
+        "title": "Where the Lost Girls Go",
+        "source_duration": 300.0,
+        "start": 2.8
+      },
+      {
+        "file": "alt/Emily Woo Zeller/02 - The Complete Poppy War Trilogy.mp3",
+        "title": "The Complete Poppy War Trilogy",
+        "source_duration": 300.0,
+        "start": 64.0
+      },
+      {
+        "file": "alt/Emily Woo Zeller/03 - The Statistically Unlikely Reunion A Nerdy Slow Burn Second.mp3",
+        "title": "The Statistically Unlikely Reunion: A Nerdy, Slow Burn, Second Chance, Spicy Friends-to-Lovers Romance (Grad or Die Romance Book 2)",
+        "source_duration": 706.4,
+        "start": 435.9
+      }
+    ]
+  },
+  "Suzy Jackson": {
+    "primary": "Suzy Jackson.mp3",
+    "samples": [
+      {
+        "file": "alt/Suzy Jackson/01 - A Symphony of Silence.mp3",
+        "title": "A Symphony of Silence",
+        "source_duration": 300.0,
+        "start": 204.8
+      },
+      {
+        "file": "alt/Suzy Jackson/02 - Sharpest Court.mp3",
+        "title": "Sharpest Court",
+        "source_duration": 300.0,
+        "start": 222.1
+      },
+      {
+        "file": "alt/Suzy Jackson/03 - The Midnight Orchestra.mp3",
+        "title": "The Midnight Orchestra",
+        "source_duration": 299.5,
+        "start": 112.2
+      }
+    ]
+  },
+  "Annie Ellicott": {
+    "primary": "Annie Ellicott.mp3",
+    "samples": [
+      {
+        "file": "alt/Annie Ellicott/01 - Save Scumming Book 2.mp3",
+        "title": "Save Scumming: Book 2",
+        "source_duration": 177.6,
+        "start": 29.1
+      },
+      {
+        "file": "alt/Annie Ellicott/02 - The Eye of the Bedlam Bride.mp3",
+        "title": "The Eye of the Bedlam Bride",
+        "source_duration": 269.5,
+        "start": 45.0
+      },
+      {
+        "file": "alt/Annie Ellicott/03 - Chrysalis Books 13.mp3",
+        "title": "Chrysalis, Books 1-3",
+        "source_duration": 243.8,
+        "start": 85.0
+      }
+    ]
+  },
+  "Andrea Parsneau": {
+    "primary": "Andrea Parsneau.mp3",
+    "samples": [
+      {
+        "file": "alt/Andrea Parsneau/01 - Azarinth Healer Book Seven.mp3",
+        "title": "Azarinth Healer Book Seven",
+        "source_duration": 290.0,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Andrea Parsneau/02 - The Wandering Inn.mp3",
+        "title": "The Wandering Inn",
+        "source_duration": 287.8,
+        "start": 18.2
+      },
+      {
+        "file": "alt/Andrea Parsneau/03 - The Last Light.mp3",
+        "title": "The Last Light",
+        "source_duration": 300.0,
+        "start": 15.8
+      }
+    ]
+  },
+  "Cindy Kay": {
+    "primary": "Cindy Kay.mp3",
+    "samples": [
+      {
+        "file": "alt/Cindy Kay/01 - Twisted Love.mp3",
+        "title": "Twisted Love",
+        "source_duration": 300.0,
+        "start": 190.5
+      },
+      {
+        "file": "alt/Cindy Kay/02 - Twisted Hate.mp3",
+        "title": "Twisted Hate",
+        "source_duration": 300.0,
+        "start": 163.8
+      },
+      {
+        "file": "alt/Cindy Kay/03 - Twisted Games.mp3",
+        "title": "Twisted Games",
+        "source_duration": 300.0,
+        "start": 185.0
+      }
+    ]
+  },
+  "Soneela Nankani": {
+    "primary": "Soneela Nankani.mp3",
+    "samples": [
+      {
+        "file": "alt/Soneela Nankani/01 - The City of Brass.mp3",
+        "title": "The City of Brass",
+        "source_duration": 300.0,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Soneela Nankani/02 - The Empire of Gold.mp3",
+        "title": "The Empire of Gold",
+        "source_duration": 300.0,
+        "start": 180.6
+      },
+      {
+        "file": "alt/Soneela Nankani/03 - The Getaway.mp3",
+        "title": "The Getaway",
+        "source_duration": 293.0,
+        "start": 169.1
+      }
+    ]
+  },
+  "Nancy Wu": {
+    "primary": "Nancy Wu.mp3",
+    "samples": [
+      {
+        "file": "alt/Nancy Wu/01 - Fighting Edge.mp3",
+        "title": "Fighting Edge",
+        "source_duration": 300.0,
+        "start": 24.0
+      },
+      {
+        "file": "alt/Nancy Wu/02 - From Beer to Eternity.mp3",
+        "title": "From Beer to Eternity",
+        "source_duration": 300.0,
+        "start": 226.8
+      },
+      {
+        "file": "alt/Nancy Wu/03 - China to Me.mp3",
+        "title": "China to Me",
+        "source_duration": 300.0,
+        "start": 5.8
+      }
+    ]
+  },
+  "Natalie Naudus": {
+    "primary": "Natalie Naudus.mp3",
+    "samples": [
+      {
+        "file": "alt/Natalie Naudus/01 - Thief of Hearts.mp3",
+        "title": "Thief of Hearts",
+        "source_duration": 274.8,
+        "start": 210.6
+      },
+      {
+        "file": "alt/Natalie Naudus/02 - Japanese Gothic.mp3",
+        "title": "Japanese Gothic",
+        "source_duration": 300.0,
+        "start": 136.4
+      },
+      {
+        "file": "alt/Natalie Naudus/03 - Tidy the Fck Up.mp3",
+        "title": "Tidy the F*ck Up",
+        "source_duration": 300.0,
+        "start": 156.0
+      }
+    ]
+  },
+  "Erin deWard": {
+    "primary": "Erin deWard.mp3",
+    "samples": [
+      {
+        "file": "alt/Erin deWard/01 - The Dead Husband.mp3",
+        "title": "The Dead Husband",
+        "source_duration": 300.0,
+        "start": 52.5
+      },
+      {
+        "file": "alt/Erin deWard/02 - Show and Sell.mp3",
+        "title": "Show and Sell",
+        "source_duration": 300.0,
+        "start": 15.4
+      },
+      {
+        "file": "alt/Erin deWard/03 - The High Heaven.mp3",
+        "title": "The High Heaven",
+        "source_duration": 300.0,
+        "start": 20.1
+      }
+    ]
+  },
+  "Eunice Wong": {
+    "primary": "Eunice Wong.mp3",
+    "samples": [
+      {
+        "file": "alt/Eunice Wong/01 - Wonderland.mp3",
+        "title": "Wonderland",
+        "source_duration": 300.0,
+        "start": 62.3
+      },
+      {
+        "file": "alt/Eunice Wong/02 - The Last Mandarin.mp3",
+        "title": "The Last Mandarin",
+        "source_duration": 300.0,
+        "start": 7.2
+      },
+      {
+        "file": "alt/Eunice Wong/03 - Dialed In.mp3",
+        "title": "Dialed In",
+        "source_duration": 300.0,
+        "start": 236.1
+      }
+    ]
+  },
+  "Amanda Dolan": {
+    "primary": "Amanda Dolan.mp3",
+    "samples": [
+      {
+        "file": "alt/Amanda Dolan/01 - Spark of the Everflame.mp3",
+        "title": "Spark of the Everflame",
+        "source_duration": 300.0,
+        "start": 219.0
+      },
+      {
+        "file": "alt/Amanda Dolan/02 - Glow of the Everflame.mp3",
+        "title": "Glow of the Everflame",
+        "source_duration": 296.3,
+        "start": 16.7
+      },
+      {
+        "file": "alt/Amanda Dolan/03 - Red Queen.mp3",
+        "title": "Red Queen",
+        "source_duration": 300.0,
+        "start": 148.4
+      }
+    ]
+  },
+  "Stephanie Németh-Parker": {
+    "primary": "Stephanie Németh-Parker.mp3",
+    "samples": [
+      {
+        "file": "alt/Stephanie Németh-Parker/01 - Her First Mistake.mp3",
+        "title": "Her First Mistake",
+        "source_duration": 284.5,
+        "start": 28.4
+      },
+      {
+        "file": "alt/Stephanie Németh-Parker/02 - Until She Dies.mp3",
+        "title": "Until She Dies",
+        "source_duration": 300.0,
+        "start": 19.2
+      },
+      {
+        "file": "alt/Stephanie Németh-Parker/03 - Guardian of Aster Fall Omnibus Books 14 A LitRPG Progression.mp3",
+        "title": "Guardian of Aster Fall Omnibus, Books 1-4: A LitRPG Progression Epic (Guardian of Aster Fall Box Set Book 1)",
+        "source_duration": 284.9,
+        "start": 175.8
+      }
+    ]
+  },
+  "Nneka Okoye": {
+    "primary": "Nneka Okoye.mp3",
+    "samples": [
+      {
+        "file": "alt/Nneka Okoye/01 - Spring Clean.mp3",
+        "title": "Spring Clean",
+        "source_duration": 59.3,
+        "start": 0.0
+      },
+      {
+        "file": "alt/Nneka Okoye/02 - Meet Me on the Bridge.mp3",
+        "title": "Meet Me on the Bridge",
+        "source_duration": 273.0,
+        "start": 3.5
+      },
+      {
+        "file": "alt/Nneka Okoye/03 - My Salty Mary.mp3",
+        "title": "My Salty Mary",
+        "source_duration": 300.0,
+        "start": 22.1
+      }
+    ]
+  },
+  "Robin Miles": {
+    "primary": "Robin Miles.mp3",
+    "samples": [
+      {
+        "file": "alt/Robin Miles/01 - The Personal Librarian.mp3",
+        "title": "The Personal Librarian",
+        "source_duration": 300.0,
+        "start": 158.0
+      },
+      {
+        "file": "alt/Robin Miles/02 - Discerning the Voice of God.mp3",
+        "title": "Discerning the Voice of God",
+        "source_duration": 300.0,
+        "start": 22.9
+      },
+      {
+        "file": "alt/Robin Miles/03 - The Vanderbeekers of 141st Street.mp3",
+        "title": "The Vanderbeekers of 141st Street",
+        "source_duration": 300.0,
+        "start": 65.3
+      }
+    ]
+  },
+  "Kate Reading": {
+    "primary": "Kate Reading.mp3",
+    "samples": [
+      {
+        "file": "alt/Kate Reading/01 - The Witching Hour.mp3",
+        "title": "The Witching Hour",
+        "source_duration": 298.9,
+        "start": 66.4
+      },
+      {
+        "file": "alt/Kate Reading/02 - Lord of Chaos.mp3",
+        "title": "Lord of Chaos",
+        "source_duration": 300.0,
+        "start": 221.5
+      },
+      {
+        "file": "alt/Kate Reading/03 - The Shadow Rising.mp3",
+        "title": "The Shadow Rising",
+        "source_duration": 300.0,
+        "start": 7.5
+      }
+    ]
+  },
+  "Bahni Turpin": {
+    "primary": "Bahni Turpin.mp3",
+    "samples": [
+      {
+        "file": "alt/Bahni Turpin/01 - The Southern Book Clubs Guide to Slaying Vampires.mp3",
+        "title": "The Southern Book Club's Guide to Slaying Vampires",
+        "source_duration": 300.0,
+        "start": 235.1
+      },
+      {
+        "file": "alt/Bahni Turpin/02 - Sophia Sprite and the Sasquatch Secret.mp3",
+        "title": "Sophia Sprite and the Sasquatch Secret",
+        "source_duration": 294.2,
+        "start": 4.3
+      },
+      {
+        "file": "alt/Bahni Turpin/03 - Allegedly.mp3",
+        "title": "Allegedly",
+        "source_duration": 300.0,
+        "start": 4.2
+      }
+    ]
+  },
+  "Julia Whelan": {
+    "primary": "Julia Whelan.mp3",
+    "samples": [
+      {
+        "file": "alt/Julia Whelan/01 - The Collector.mp3",
+        "title": "The Collector",
+        "source_duration": 300.0,
+        "start": 230.6
+      },
+      {
+        "file": "alt/Julia Whelan/02 - The Invisible Life of Addie LaRue.mp3",
+        "title": "The Invisible Life of Addie LaRue",
+        "source_duration": 300.0,
+        "start": 161.8
+      },
+      {
+        "file": "alt/Julia Whelan/03 - The Witness.mp3",
+        "title": "The Witness",
+        "source_duration": 300.0,
+        "start": 235.8
+      }
+    ]
+  },
+  "January LaVoy": {
+    "primary": "January LaVoy.mp3",
+    "samples": [
+      {
+        "file": "alt/January LaVoy/01 - The Liar.mp3",
+        "title": "The Liar",
+        "source_duration": 300.0,
+        "start": 83.3
+      },
+      {
+        "file": "alt/January LaVoy/02 - Shelter in Place.mp3",
+        "title": "Shelter in Place",
+        "source_duration": 300.0,
+        "start": 69.3
+      },
+      {
+        "file": "alt/January LaVoy/03 - The Change.mp3",
+        "title": "The Change",
+        "source_duration": 300.0,
+        "start": 237.7
+      }
+    ]
+  },
+  "Marin Ireland": {
+    "primary": "Marin Ireland.mp3",
+    "samples": [
+      {
+        "file": "alt/Marin Ireland/01 - The Widows Husbands Secret Lie.mp3",
+        "title": "The Widow's Husband's Secret Lie",
+        "source_duration": 300.0,
+        "start": 2.2
+      },
+      {
+        "file": "alt/Marin Ireland/02 - Nothing to See Here.mp3",
+        "title": "Nothing to See Here",
+        "source_duration": 300.0,
+        "start": 89.0
+      },
+      {
+        "file": "alt/Marin Ireland/03 - The Foursome.mp3",
+        "title": "The Foursome",
+        "source_duration": 300.0,
+        "start": 128.4
+      }
+    ]
+  },
+  "Saskia Maarleveld": {
+    "primary": "Saskia Maarleveld.mp3",
+    "samples": [
+      {
+        "file": "alt/Saskia Maarleveld/01 - The Rose Code.mp3",
+        "title": "The Rose Code",
+        "source_duration": 300.0,
+        "start": 6.2
+      },
+      {
+        "file": "alt/Saskia Maarleveld/02 - The Briar Club.mp3",
+        "title": "The Briar Club",
+        "source_duration": 300.0,
+        "start": 19.3
+      },
+      {
+        "file": "alt/Saskia Maarleveld/03 - Wolf in the Fold.mp3",
+        "title": "Wolf in the Fold",
+        "source_duration": 290.1,
+        "start": 209.6
+      }
+    ]
+  },
+  "Imogen Church": {
+    "primary": "Imogen Church.mp3",
+    "samples": [
+      {
+        "file": "alt/Imogen Church/01 - The House Swap.mp3",
+        "title": "The House Swap",
+        "source_duration": 300.0,
+        "start": 20.3
+      },
+      {
+        "file": "alt/Imogen Church/02 - A Murder in Belgravia.mp3",
+        "title": "A Murder in Belgravia",
+        "source_duration": 300.0,
+        "start": 159.8
+      },
+      {
+        "file": "alt/Imogen Church/03 - The New Wife.mp3",
+        "title": "The New Wife",
+        "source_duration": 300.0,
+        "start": 26.6
+      }
+    ]
+  },
+  "Rosalyn Landor": {
+    "primary": "Rosalyn Landor.mp3",
+    "samples": [
+      {
+        "file": "alt/Rosalyn Landor/01 - A Waltz to Remember.mp3",
+        "title": "A Waltz to Remember",
+        "source_duration": 146.8,
+        "start": 13.3
+      },
+      {
+        "file": "alt/Rosalyn Landor/02 - Remember That Day.mp3",
+        "title": "Remember That Day",
+        "source_duration": 138.6,
+        "start": 12.5
+      },
+      {
+        "file": "alt/Rosalyn Landor/03 - Bridgerton Prequels Collection.mp3",
+        "title": "Bridgerton Prequels Collection",
+        "source_duration": 300.0,
+        "start": 27.4
+      }
+    ]
+  },
+  "Davina Porter": {
+    "primary": "Davina Porter.mp3",
+    "samples": [
+      {
+        "file": "alt/Davina Porter/01 - The Mists of Avalon.mp3",
+        "title": "The Mists of Avalon",
+        "source_duration": 296.6,
+        "start": 11.3
+      },
+      {
+        "file": "alt/Davina Porter/02 - Go Tell the Bees that I Am Gone.mp3",
+        "title": "Go Tell the Bees that I Am Gone",
+        "source_duration": 300.0,
+        "start": 9.4
+      },
+      {
+        "file": "alt/Davina Porter/03 - Far from the Madding Crowd.mp3",
+        "title": "Far from the Madding Crowd",
+        "source_duration": 298.9,
+        "start": 123.9
+      }
+    ]
+  },
+  "Adjoa Andoh": {
+    "primary": "Adjoa Andoh.mp3",
+    "samples": [
+      {
+        "file": "alt/Adjoa Andoh/01 - Ancillary Justice.mp3",
+        "title": "Ancillary Justice",
+        "source_duration": 300.0,
+        "start": 58.9
+      },
+      {
+        "file": "alt/Adjoa Andoh/02 - Midnight Falcon.mp3",
+        "title": "Midnight Falcon",
+        "source_duration": 300.0,
+        "start": 26.4
+      },
+      {
+        "file": "alt/Adjoa Andoh/03 - And So I Roar.mp3",
+        "title": "And So I Roar",
+        "source_duration": 300.0,
+        "start": 229.8
+      }
+    ]
+  },
+  "Moira Quirk": {
+    "primary": "Moira Quirk.mp3",
+    "samples": [
+      {
+        "file": "alt/Moira Quirk/01 - Harrow the Ninth.mp3",
+        "title": "Harrow the Ninth",
+        "source_duration": 300.0,
+        "start": 149.8
+      },
+      {
+        "file": "alt/Moira Quirk/02 - Gideon the Ninth.mp3",
+        "title": "Gideon the Ninth",
+        "source_duration": 300.0,
+        "start": 224.7
+      },
+      {
+        "file": "alt/Moira Quirk/03 - Nona the Ninth.mp3",
+        "title": "Nona the Ninth",
+        "source_duration": 153.9,
+        "start": 50.6
+      }
+    ]
+  },
+  "Brittany Pressley": {
+    "primary": "Brittany Pressley.mp3",
+    "samples": [
+      {
+        "file": "alt/Brittany Pressley/01 - The Girls in the Dark.mp3",
+        "title": "The Girls in the Dark",
+        "source_duration": 297.5,
+        "start": 11.9
+      },
+      {
+        "file": "alt/Brittany Pressley/02 - The Guilty Ones.mp3",
+        "title": "The Guilty Ones",
+        "source_duration": 299.8,
+        "start": 167.8
+      },
+      {
+        "file": "alt/Brittany Pressley/03 - You Know Why.mp3",
+        "title": "You Know Why",
+        "source_duration": 305.5,
+        "start": 220.2
+      }
+    ]
+  },
+  "Andi Arndt": {
+    "primary": "Andi Arndt.mp3",
+    "samples": [
+      {
+        "file": "alt/Andi Arndt/01 - How to Date a Rockstar Without Getting Murdered.mp3",
+        "title": "How to Date a Rockstar (Without Getting Murdered)",
+        "source_duration": 300.0,
+        "start": 25.6
+      },
+      {
+        "file": "alt/Andi Arndt/02 - The Board.mp3",
+        "title": "The Board",
+        "source_duration": 141.8,
+        "start": 6.5
+      },
+      {
+        "file": "alt/Andi Arndt/03 - Smash.mp3",
+        "title": "Smash",
+        "source_duration": 302.2,
+        "start": 145.4
+      }
+    ]
+  },
+  "Cassandra Campbell": {
+    "primary": "Cassandra Campbell.mp3",
+    "samples": [
+      {
+        "file": "alt/Cassandra Campbell/01 - The Memory Box.mp3",
+        "title": "The Memory Box",
+        "source_duration": 286.7,
+        "start": 14.8
+      },
+      {
+        "file": "alt/Cassandra Campbell/02 - The Gilded Hour.mp3",
+        "title": "The Gilded Hour",
+        "source_duration": 292.8,
+        "start": 26.5
+      },
+      {
+        "file": "alt/Cassandra Campbell/03 - On the Street of the Hidden Shops.mp3",
+        "title": "On the Street of the Hidden Shops",
+        "source_duration": 300.0,
+        "start": 132.4
+      }
+    ]
+  },
+  "Erin Mallon": {
+    "primary": "Erin Mallon.mp3",
+    "samples": [
+      {
+        "file": "alt/Erin Mallon/01 - Mistletoe Meet Cute.mp3",
+        "title": "Mistletoe Meet Cute",
+        "source_duration": 300.0,
+        "start": 23.7
+      },
+      {
+        "file": "alt/Erin Mallon/02 - Close Call.mp3",
+        "title": "Close Call",
+        "source_duration": 300.0,
+        "start": 175.6
+      },
+      {
+        "file": "alt/Erin Mallon/03 - Wait with Me.mp3",
+        "title": "Wait with Me",
+        "source_duration": 300.0,
+        "start": 22.5
+      }
+    ]
+  },
+  "Susan Duerden": {
+    "primary": "Susan Duerden.mp3",
+    "samples": [
+      {
+        "file": "alt/Susan Duerden/01 - The Secret Garden AmazonClassics Edition.mp3",
+        "title": "The Secret Garden (AmazonClassics Edition)",
+        "source_duration": 300.1,
+        "start": 17.6
+      },
+      {
+        "file": "alt/Susan Duerden/02 - One Night of Passion.mp3",
+        "title": "One Night of Passion",
+        "source_duration": 300.0,
+        "start": 6.3
+      },
+      {
+        "file": "alt/Susan Duerden/03 - Three Weeks With Lady X.mp3",
+        "title": "Three Weeks With Lady X",
+        "source_duration": 300.0,
+        "start": 99.9
+      }
+    ]
+  },
+  "Mary Jane Wells": {
+    "primary": "Mary Jane Wells.mp3",
+    "samples": [
+      {
+        "file": "alt/Mary Jane Wells/01 - Money Murder Mayhem A Lord and Lady Crosswick Mystery Book 1.mp3",
+        "title": "Money, Murder, Mayhem (A Lord and Lady Crosswick Mystery Book 1)",
+        "source_duration": 288.9,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Mary Jane Wells/02 - Hello Stranger.mp3",
+        "title": "Hello Stranger",
+        "source_duration": 300.0,
+        "start": 9.0
+      },
+      {
+        "file": "alt/Mary Jane Wells/03 - An English Bride in Scotland.mp3",
+        "title": "An English Bride in Scotland",
+        "source_duration": 300.0,
+        "start": 215.0
+      }
+    ]
+  },
+  "Amanda Ronconi": {
+    "primary": "Amanda Ronconi.mp3",
+    "samples": [
+      {
+        "file": "alt/Amanda Ronconi/01 - Nine Lives Magic Mysteries Boxed Set 1013.mp3",
+        "title": "Nine Lives Magic Mysteries Boxed Set 10-13",
+        "source_duration": 300.0,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Amanda Ronconi/02 - Beechwood Harbor Magic Mysteries Boxed Set 1012.mp3",
+        "title": "Beechwood Harbor Magic Mysteries Boxed Set 10-12",
+        "source_duration": 300.0,
+        "start": 100.6
+      },
+      {
+        "file": "alt/Amanda Ronconi/03 - Sugar Shack Witch Mysteries Boxed Set.mp3",
+        "title": "Sugar Shack Witch Mysteries Boxed Set",
+        "source_duration": 300.0,
+        "start": 66.6
+      }
+    ]
+  },
+  "Xe Sands": {
+    "primary": "Xe Sands.mp3",
+    "samples": [
+      {
+        "file": "alt/Xe Sands/01 - The God Notes.mp3",
+        "title": "The God Notes",
+        "source_duration": 300.0,
+        "start": 227.2
+      },
+      {
+        "file": "alt/Xe Sands/02 - SelfCompassion.mp3",
+        "title": "Self-Compassion",
+        "source_duration": 300.0,
+        "start": 204.4
+      },
+      {
+        "file": "alt/Xe Sands/03 - People Love Dead Jews.mp3",
+        "title": "People Love Dead Jews",
+        "source_duration": 170.5,
+        "start": 5.9
+      }
+    ]
+  },
+  "Tavia Gilbert": {
+    "primary": "Tavia Gilbert.mp3",
+    "samples": [
+      {
+        "file": "alt/Tavia Gilbert/01 - The Shattering Peace.mp3",
+        "title": "The Shattering Peace",
+        "source_duration": 124.5,
+        "start": 6.8
+      },
+      {
+        "file": "alt/Tavia Gilbert/02 - Infinity  One.mp3",
+        "title": "Infinity + One",
+        "source_duration": 285.1,
+        "start": 25.9
+      },
+      {
+        "file": "alt/Tavia Gilbert/03 - Fall of Marigolds.mp3",
+        "title": "Fall of Marigolds",
+        "source_duration": 300.0,
+        "start": 96.4
+      }
+    ]
+  },
+  "Karen White": {
+    "primary": "Karen White.mp3",
+    "samples": [
+      {
+        "file": "alt/Karen White/01 - Chocolate Covered Murder.mp3",
+        "title": "Chocolate Covered Murder",
+        "source_duration": 300.0,
+        "start": 3.8
+      },
+      {
+        "file": "alt/Karen White/02 - Running on Empty.mp3",
+        "title": "Running on Empty",
+        "source_duration": 244.2,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Karen White/03 - Invitation Only Murder.mp3",
+        "title": "Invitation Only Murder",
+        "source_duration": 300.0,
+        "start": 63.2
+      }
+    ]
+  },
+  "Louise Brealey": {
+    "primary": "Louise Brealey.mp3",
+    "samples": [
+      {
+        "file": "alt/Louise Brealey/01 - How to Build a Girl.mp3",
+        "title": "How to Build a Girl",
+        "source_duration": 300.0,
+        "start": 42.5
+      },
+      {
+        "file": "alt/Louise Brealey/02 - The Wolf Border.mp3",
+        "title": "The Wolf Border",
+        "source_duration": 300.0,
+        "start": 67.3
+      },
+      {
+        "file": "alt/Louise Brealey/03 - Cilkas Journey.mp3",
+        "title": "Cilka's Journey",
+        "source_duration": 291.7,
+        "start": 226.8
+      }
+    ]
+  },
+  "Lesley Manville": {
+    "primary": "Lesley Manville.mp3",
+    "samples": [
+      {
+        "file": "alt/Lesley Manville/01 - The Man Who Died Twice.mp3",
+        "title": "The Man Who Died Twice",
+        "source_duration": 281.5,
+        "start": 28.9
+      },
+      {
+        "file": "alt/Lesley Manville/02 - Marble Hall Murders.mp3",
+        "title": "Marble Hall Murders",
+        "source_duration": 300.0,
+        "start": 27.9
+      },
+      {
+        "file": "alt/Lesley Manville/03 - Moonflower Murders.mp3",
+        "title": "Moonflower Murders",
+        "source_duration": 300.0,
+        "start": 2.0
+      }
+    ]
+  },
+  "Clare Corbett": {
+    "primary": "Clare Corbett.mp3",
+    "samples": [
+      {
+        "file": "alt/Clare Corbett/01 - Her Stepmothers House.mp3",
+        "title": "Her Stepmother's House",
+        "source_duration": 298.9,
+        "start": 6.9
+      },
+      {
+        "file": "alt/Clare Corbett/02 - Christmas at the First Sip Coffee Shop.mp3",
+        "title": "Christmas at the First Sip Coffee Shop",
+        "source_duration": 300.0,
+        "start": 2.5
+      },
+      {
+        "file": "alt/Clare Corbett/03 - A New Start at the Happily Ever After Bookshop.mp3",
+        "title": "A New Start at the Happily Ever After Bookshop",
+        "source_duration": 300.0,
+        "start": 20.9
+      }
+    ]
+  },
+  "Celia Imrie": {
+    "primary": "Celia Imrie.mp3",
+    "samples": [
+      {
+        "file": "alt/Celia Imrie/01 - Orphans of the Storm.mp3",
+        "title": "Orphans of the Storm",
+        "source_duration": 300.0,
+        "start": 165.3
+      },
+      {
+        "file": "alt/Celia Imrie/02 - The Elegant Hustler.mp3",
+        "title": "The Elegant Hustler",
+        "source_duration": 300.0,
+        "start": 7.3
+      },
+      {
+        "file": "alt/Celia Imrie/03 - Bleak Expectations.mp3",
+        "title": "Bleak Expectations",
+        "source_duration": 300.0,
+        "start": 19.5
+      }
+    ]
+  },
+  "Indira Varma": {
+    "primary": "Indira Varma.mp3",
+    "samples": [
+      {
+        "file": "alt/Indira Varma/01 - The Secret Garden.mp3",
+        "title": "The Secret Garden",
+        "source_duration": 300.0,
+        "start": 154.1
+      },
+      {
+        "file": "alt/Indira Varma/02 - Wyrd Sisters.mp3",
+        "title": "Wyrd Sisters",
+        "source_duration": 298.7,
+        "start": 226.2
+      },
+      {
+        "file": "alt/Indira Varma/03 - Equal Rites.mp3",
+        "title": "Equal Rites",
+        "source_duration": 300.0,
+        "start": 20.1
+      }
+    ]
+  },
+  "Katherine Kellgren": {
+    "primary": "Katherine Kellgren.mp3",
+    "samples": [
+      {
+        "file": "alt/Katherine Kellgren/01 - Dark Witch.mp3",
+        "title": "Dark Witch",
+        "source_duration": 300.0,
+        "start": 2.5
+      },
+      {
+        "file": "alt/Katherine Kellgren/02 - Timeless Tales of Beatrix Potter.mp3",
+        "title": "Timeless Tales of Beatrix Potter",
+        "source_duration": 300.0,
+        "start": 173.9
+      },
+      {
+        "file": "alt/Katherine Kellgren/03 - Pride and Prejudice and Zombies.mp3",
+        "title": "Pride and Prejudice and Zombies",
+        "source_duration": 189.5,
+        "start": 106.3
+      }
+    ]
+  },
+  "Katherine Parkinson": {
+    "primary": "Katherine Parkinson.mp3",
+    "samples": [
+      {
+        "file": "alt/Katherine Parkinson/01 - Sophie Standing There.mp3",
+        "title": "Sophie, Standing There",
+        "source_duration": 300.0,
+        "start": 69.8
+      },
+      {
+        "file": "alt/Katherine Parkinson/02 - Tackle.mp3",
+        "title": "Tackle!",
+        "source_duration": 293.3,
+        "start": 20.6
+      },
+      {
+        "file": "alt/Katherine Parkinson/03 - Nesting for Beginners.mp3",
+        "title": "Nesting for Beginners",
+        "source_duration": 300.0,
+        "start": 234.3
+      }
+    ]
+  },
+  "Travis Baldree": {
+    "primary": "Travis Baldree.mp3",
+    "samples": [
+      {
+        "file": "alt/Travis Baldree/01 - The Primal Hunter 15.mp3",
+        "title": "The Primal Hunter 15",
+        "source_duration": 292.0,
+        "start": 136.2
+      },
+      {
+        "file": "alt/Travis Baldree/02 - The Primal Hunter 13.mp3",
+        "title": "The Primal Hunter 13",
+        "source_duration": 299.3,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Travis Baldree/03 - The Primal Hunter 9 A LitRPG Adventure.mp3",
+        "title": "The Primal Hunter 9: A LitRPG Adventure",
+        "source_duration": 298.6,
+        "start": 28.8
+      }
+    ]
+  },
+  "Jeff Hays": {
+    "primary": "Jeff Hays.mp3",
+    "samples": [
+      {
+        "file": "alt/Jeff Hays/01 - The Gate of the Feral Gods.mp3",
+        "title": "The Gate of the Feral Gods",
+        "source_duration": 185.5,
+        "start": 56.9
+      },
+      {
+        "file": "alt/Jeff Hays/02 - A Parade of Horribles.mp3",
+        "title": "A Parade of Horribles",
+        "source_duration": 268.7,
+        "start": 19.1
+      },
+      {
+        "file": "alt/Jeff Hays/03 - The Butchers Masquerade.mp3",
+        "title": "The Butcher's Masquerade",
+        "source_duration": 228.3,
+        "start": 29.0
+      }
+    ]
+  },
+  "Luke Daniels": {
+    "primary": "Luke Daniels.mp3",
+    "samples": [
+      {
+        "file": "alt/Luke Daniels/01 - Tower Fall.mp3",
+        "title": "Tower Fall",
+        "source_duration": 285.5,
+        "start": 22.7
+      },
+      {
+        "file": "alt/Luke Daniels/02 - All the Skills 4 A DeckBuilding LitRPG.mp3",
+        "title": "All the Skills 4: A Deck-Building LitRPG",
+        "source_duration": 294.4,
+        "start": 135.3
+      },
+      {
+        "file": "alt/Luke Daniels/03 - All the Skills A DeckBuilding LitRPG.mp3",
+        "title": "All the Skills: A Deck-Building LitRPG",
+        "source_duration": 293.4,
+        "start": 10.9
+      }
+    ]
+  },
+  "Nick Podehl": {
+    "primary": "Nick Podehl.mp3",
+    "samples": [
+      {
+        "file": "alt/Nick Podehl/01 - Flowbreaker.mp3",
+        "title": "Flowbreaker",
+        "source_duration": 269.9,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Nick Podehl/02 - Im Not the Hero An Isekai LitRPG.mp3",
+        "title": "I'm Not the Hero: An Isekai LitRPG",
+        "source_duration": 300.0,
+        "start": 199.4
+      },
+      {
+        "file": "alt/Nick Podehl/03 - Crucible of Sundered Loyalties An Isekai LitRPG.mp3",
+        "title": "Crucible of Sundered Loyalties: An Isekai LitRPG",
+        "source_duration": 264.0,
+        "start": 2.0
+      }
+    ]
+  },
+  "Ray Porter": {
+    "primary": "Ray Porter.mp3",
+    "samples": [
+      {
+        "file": "alt/Ray Porter/01 - All These Worlds.mp3",
+        "title": "All These Worlds",
+        "source_duration": 300.0,
+        "start": 215.2
+      },
+      {
+        "file": "alt/Ray Porter/02 - Heavens River.mp3",
+        "title": "Heaven's River",
+        "source_duration": 300.0,
+        "start": 206.3
+      },
+      {
+        "file": "alt/Ray Porter/03 - The Infinite Extent.mp3",
+        "title": "The Infinite Extent",
+        "source_duration": 300.0,
+        "start": 10.7
+      }
+    ]
+  },
+  "R.C. Bray": {
+    "primary": "R.C. Bray.mp3",
+    "samples": [
+      {
+        "file": "alt/R.C. Bray/01 - Valkyrie.mp3",
+        "title": "Valkyrie",
+        "source_duration": 300.0,
+        "start": 193.5
+      },
+      {
+        "file": "alt/R.C. Bray/02 - Gateway.mp3",
+        "title": "Gateway",
+        "source_duration": 279.3,
+        "start": 9.9
+      },
+      {
+        "file": "alt/R.C. Bray/03 - Fallout.mp3",
+        "title": "Fallout",
+        "source_duration": 298.8,
+        "start": 97.5
+      }
+    ]
+  },
+  "Todd Haberkorn": {
+    "primary": "Todd Haberkorn.mp3",
+    "samples": [
+      {
+        "file": "alt/Todd Haberkorn/01 - 247 Demon Mart Publishers Pack.mp3",
+        "title": "24/7 Demon Mart: Publisher's Pack",
+        "source_duration": 291.1,
+        "start": 65.3
+      },
+      {
+        "file": "alt/Todd Haberkorn/02 - Finn Fancy Necromancy.mp3",
+        "title": "Finn Fancy Necromancy",
+        "source_duration": 300.0,
+        "start": 10.0
+      },
+      {
+        "file": "alt/Todd Haberkorn/03 - Etherious Originator.mp3",
+        "title": "Etherious: Originator",
+        "source_duration": 199.2,
+        "start": 29.4
+      }
+    ]
+  },
+  "Mark Boyett": {
+    "primary": "Mark Boyett.mp3",
+    "samples": [
+      {
+        "file": "alt/Mark Boyett/01 - Starship New Jersey Box Set The Complete 10Book SciFi Series.mp3",
+        "title": "Starship New Jersey Box Set: The Complete 10-Book SciFi Series",
+        "source_duration": 299.3,
+        "start": 26.6
+      },
+      {
+        "file": "alt/Mark Boyett/02 - Stellar Heritage The Complete Series.mp3",
+        "title": "Stellar Heritage: The Complete Series",
+        "source_duration": 292.9,
+        "start": 84.0
+      },
+      {
+        "file": "alt/Mark Boyett/03 - Ship of Prophecy Box Set The Complete 10Book Series.mp3",
+        "title": "Ship of Prophecy Box Set: The Complete 10-Book Series",
+        "source_duration": 297.4,
+        "start": 6.4
+      }
+    ]
+  },
+  "Neil Hellegers": {
+    "primary": "Neil Hellegers.mp3",
+    "samples": [
+      {
+        "file": "alt/Neil Hellegers/01 - Wild Era A LitRPG Progression Epic.mp3",
+        "title": "Wild Era: A LitRPG Progression Epic",
+        "source_duration": 297.5,
+        "start": 172.8
+      },
+      {
+        "file": "alt/Neil Hellegers/02 - The Fourth Realm.mp3",
+        "title": "The Fourth Realm",
+        "source_duration": 298.4,
+        "start": 143.7
+      },
+      {
+        "file": "alt/Neil Hellegers/03 - The Third Realm.mp3",
+        "title": "The Third Realm",
+        "source_duration": 293.3,
+        "start": 112.9
+      }
+    ]
+  },
+  "Pavi Proczko": {
+    "primary": "Pavi Proczko.mp3",
+    "samples": [
+      {
+        "file": "alt/Pavi Proczko/01 - Defiance of the Fall 17.mp3",
+        "title": "Defiance of the Fall 17",
+        "source_duration": 298.7,
+        "start": 29.0
+      },
+      {
+        "file": "alt/Pavi Proczko/02 - Loremaster Bane of the Gods  A Progression Fantasy Adventure.mp3",
+        "title": "Loremaster: Bane of the Gods - A Progression Fantasy Adventure (Ascension of a Street Rat Book 4)",
+        "source_duration": 299.2,
+        "start": 24.3
+      },
+      {
+        "file": "alt/Pavi Proczko/03 - Defiance of the Fall 2.mp3",
+        "title": "Defiance of the Fall 2",
+        "source_duration": 294.0,
+        "start": 2.0
+      }
+    ]
+  },
+  "Eric Michael Summerer": {
+    "primary": "Eric Michael Summerer.mp3",
+    "samples": [
+      {
+        "file": "alt/Eric Michael Summerer/01 - The Seven Principles for Making Marriage Work.mp3",
+        "title": "The Seven Principles for Making Marriage Work",
+        "source_duration": 300.0,
+        "start": 3.0
+      },
+      {
+        "file": "alt/Eric Michael Summerer/02 - The Perfect Run.mp3",
+        "title": "The Perfect Run",
+        "source_duration": 297.4,
+        "start": 10.2
+      },
+      {
+        "file": "alt/Eric Michael Summerer/03 - The Perfect Run 2.mp3",
+        "title": "The Perfect Run 2",
+        "source_duration": 291.0,
+        "start": 3.5
+      }
+    ]
+  },
+  "Jack Voraces": {
+    "primary": "Jack Voraces.mp3",
+    "samples": [
+      {
+        "file": "alt/Jack Voraces/01 - Apocalypse Tamer The Complete Series.mp3",
+        "title": "Apocalypse Tamer: The Complete Series",
+        "source_duration": 298.5,
+        "start": 27.9
+      },
+      {
+        "file": "alt/Jack Voraces/02 - Mother of Learning Arc 2.mp3",
+        "title": "Mother of Learning Arc 2",
+        "source_duration": 292.3,
+        "start": 28.9
+      },
+      {
+        "file": "alt/Jack Voraces/03 - Mother of Learning Arc 3.mp3",
+        "title": "Mother of Learning Arc 3",
+        "source_duration": 298.8,
+        "start": 16.7
+      }
+    ]
+  },
+  "J.S. Arquin": {
+    "primary": "J.S. Arquin.mp3",
+    "samples": [
+      {
+        "file": "alt/J.S. Arquin/01 - Monarch A LitRPG Progression Epic.mp3",
+        "title": "Monarch: A LitRPG Progression Epic",
+        "source_duration": 286.2,
+        "start": 174.3
+      },
+      {
+        "file": "alt/J.S. Arquin/02 - Path of Steel.mp3",
+        "title": "Path of Steel",
+        "source_duration": 300.0,
+        "start": 235.1
+      },
+      {
+        "file": "alt/J.S. Arquin/03 - The Path of Ascension Books 135.mp3",
+        "title": "The Path of Ascension: Books 1-3.5",
+        "source_duration": 300.0,
+        "start": 50.7
+      }
+    ]
+  },
+  "Peter Berkrot": {
+    "primary": "Peter Berkrot.mp3",
+    "samples": [
+      {
+        "file": "alt/Peter Berkrot/01 - Savant Barbarian An OP MC LitRPG.mp3",
+        "title": "Savant Barbarian: An OP MC LitRPG",
+        "source_duration": 201.2,
+        "start": 16.6
+      },
+      {
+        "file": "alt/Peter Berkrot/02 - The Untethered Soul.mp3",
+        "title": "The Untethered Soul",
+        "source_duration": 300.0,
+        "start": 2.9
+      },
+      {
+        "file": "alt/Peter Berkrot/03 - Rise of the Living Forge 5.mp3",
+        "title": "Rise of the Living Forge 5",
+        "source_duration": 297.8,
+        "start": 3.9
+      }
+    ]
+  },
+  "Kyle McCarley": {
+    "primary": "Kyle McCarley.mp3",
+    "samples": [
+      {
+        "file": "alt/Kyle McCarley/01 - Super Powereds Year 3.mp3",
+        "title": "Super Powereds: Year 3",
+        "source_duration": 300.0,
+        "start": 88.0
+      },
+      {
+        "file": "alt/Kyle McCarley/02 - Super Powereds Year 4.mp3",
+        "title": "Super Powereds: Year 4",
+        "source_duration": 300.0,
+        "start": 27.6
+      },
+      {
+        "file": "alt/Kyle McCarley/03 - Super Powereds Year 2.mp3",
+        "title": "Super Powereds: Year 2",
+        "source_duration": 300.0,
+        "start": 223.6
+      }
+    ]
+  },
+  "Christian Rodska": {
+    "primary": "Christian Rodska.mp3",
+    "samples": [
+      {
+        "file": "alt/Christian Rodska/01 - Lieutenant Hornblower.mp3",
+        "title": "Lieutenant Hornblower",
+        "source_duration": 173.9,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Christian Rodska/02 - Mr Midshipman Hornblower.mp3",
+        "title": "Mr Midshipman Hornblower",
+        "source_duration": 176.3,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Christian Rodska/03 - Kydd.mp3",
+        "title": "Kydd",
+        "source_duration": 183.5,
+        "start": 12.0
+      }
+    ]
+  },
+  "Gildart Jackson": {
+    "primary": "Gildart Jackson.mp3",
+    "samples": [
+      {
+        "file": "alt/Gildart Jackson/01 - The 13th Paladin Boxed Set.mp3",
+        "title": "The 13th Paladin Boxed Set",
+        "source_duration": 300.0,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Gildart Jackson/02 - Harold.mp3",
+        "title": "Harold",
+        "source_duration": 113.4,
+        "start": 11.3
+      },
+      {
+        "file": "alt/Gildart Jackson/03 - The Wealth of Nations.mp3",
+        "title": "The Wealth of Nations",
+        "source_duration": 300.0,
+        "start": 21.1
+      }
+    ]
+  },
+  "Derek Perkins": {
+    "primary": "Derek Perkins.mp3",
+    "samples": [
+      {
+        "file": "alt/Derek Perkins/01 - Of Empires and Dust.mp3",
+        "title": "Of Empires and Dust",
+        "source_duration": 290.1,
+        "start": 26.4
+      },
+      {
+        "file": "alt/Derek Perkins/02 - Sapiens.mp3",
+        "title": "Sapiens",
+        "source_duration": 300.0,
+        "start": 198.9
+      },
+      {
+        "file": "alt/Derek Perkins/03 - Of War and Ruin.mp3",
+        "title": "Of War and Ruin",
+        "source_duration": 298.3,
+        "start": 147.3
+      }
+    ]
+  },
+  "Stefan Rudnicki": {
+    "primary": "Stefan Rudnicki.mp3",
+    "samples": [
+      {
+        "file": "alt/Stefan Rudnicki/01 - Basic Economics Fifth Edition.mp3",
+        "title": "Basic Economics, Fifth Edition",
+        "source_duration": 288.4,
+        "start": 14.2
+      },
+      {
+        "file": "alt/Stefan Rudnicki/02 - Wakers.mp3",
+        "title": "Wakers",
+        "source_duration": 150.0,
+        "start": 2.9
+      },
+      {
+        "file": "alt/Stefan Rudnicki/03 - Venus.mp3",
+        "title": "Venus",
+        "source_duration": 300.0,
+        "start": 6.7
+      }
+    ]
+  },
+  "Will Watt": {
+    "primary": "Will Watt.mp3",
+    "samples": [
+      {
+        "file": "alt/Will Watt/01 - Harris Brothers Series Box Set.mp3",
+        "title": "Harris Brothers Series Box Set",
+        "source_duration": 299.8,
+        "start": 28.9
+      },
+      {
+        "file": "alt/Will Watt/02 - Alls Fair in Love and Blood.mp3",
+        "title": "All's Fair in Love and Blood",
+        "source_duration": 300.3,
+        "start": 23.5
+      },
+      {
+        "file": "alt/Will Watt/03 - Good Spirits.mp3",
+        "title": "Good Spirits",
+        "source_duration": 300.0,
+        "start": 15.4
+      }
+    ]
+  },
+  "Steven Pacey": {
+    "primary": "Steven Pacey.mp3",
+    "samples": [
+      {
+        "file": "alt/Steven Pacey/01 - The Legion Eagles of the Empire 10.mp3",
+        "title": "The Legion (Eagles of the Empire 10)",
+        "source_duration": 300.0,
+        "start": 143.3
+      },
+      {
+        "file": "alt/Steven Pacey/02 - The Amulet of Samarkand.mp3",
+        "title": "The Amulet of Samarkand",
+        "source_duration": 299.9,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Steven Pacey/03 - The Wisdom of Crowds.mp3",
+        "title": "The Wisdom of Crowds",
+        "source_duration": 300.0,
+        "start": 56.9
+      }
+    ]
+  },
+  "Michael Kramer": {
+    "primary": "Michael Kramer.mp3",
+    "samples": [
+      {
+        "file": "alt/Michael Kramer/01 - Never Split the Difference.mp3",
+        "title": "Never Split the Difference",
+        "source_duration": 300.0,
+        "start": 101.9
+      },
+      {
+        "file": "alt/Michael Kramer/02 - Lord of Chaos.mp3",
+        "title": "Lord of Chaos",
+        "source_duration": 300.0,
+        "start": 221.5
+      },
+      {
+        "file": "alt/Michael Kramer/03 - The Shadow Rising.mp3",
+        "title": "The Shadow Rising",
+        "source_duration": 300.0,
+        "start": 7.5
+      }
+    ]
+  },
+  "Simon Vance": {
+    "primary": "Simon Vance.mp3",
+    "samples": [
+      {
+        "file": "alt/Simon Vance/01 - Heretics of Dune.mp3",
+        "title": "Heretics of Dune",
+        "source_duration": 300.0,
+        "start": 17.8
+      },
+      {
+        "file": "alt/Simon Vance/02 - The Complete Sherlock Holmes.mp3",
+        "title": "The Complete Sherlock Holmes",
+        "source_duration": 299.9,
+        "start": 2.5
+      },
+      {
+        "file": "alt/Simon Vance/03 - Paradise Lost.mp3",
+        "title": "Paradise Lost",
+        "source_duration": 300.0,
+        "start": 9.6
+      }
+    ]
+  },
+  "Tim Gerard Reynolds": {
+    "primary": "Tim Gerard Reynolds.mp3",
+    "samples": [
+      {
+        "file": "alt/Tim Gerard Reynolds/01 - Morning Star.mp3",
+        "title": "Morning Star",
+        "source_duration": 300.0,
+        "start": 147.0
+      },
+      {
+        "file": "alt/Tim Gerard Reynolds/02 - Golden Son.mp3",
+        "title": "Golden Son",
+        "source_duration": 300.0,
+        "start": 11.2
+      },
+      {
+        "file": "alt/Tim Gerard Reynolds/03 - Light Bringer.mp3",
+        "title": "Light Bringer",
+        "source_duration": 300.0,
+        "start": 12.0
+      }
+    ]
+  },
+  "Scott Brick": {
+    "primary": "Scott Brick.mp3",
+    "samples": [
+      {
+        "file": "alt/Scott Brick/01 - Jurassic Park.mp3",
+        "title": "Jurassic Park",
+        "source_duration": 300.0,
+        "start": 5.3
+      },
+      {
+        "file": "alt/Scott Brick/02 - Alexander Hamilton.mp3",
+        "title": "Alexander Hamilton",
+        "source_duration": 300.0,
+        "start": 200.1
+      },
+      {
+        "file": "alt/Scott Brick/03 - Washington.mp3",
+        "title": "Washington",
+        "source_duration": 300.0,
+        "start": 29.8
+      }
+    ]
+  },
+  "Jefferson Mays": {
+    "primary": "Jefferson Mays.mp3",
+    "samples": [
+      {
+        "file": "alt/Jefferson Mays/01 - Calibans War.mp3",
+        "title": "Caliban's War",
+        "source_duration": 300.0,
+        "start": 54.6
+      },
+      {
+        "file": "alt/Jefferson Mays/02 - Tiamats Wrath.mp3",
+        "title": "Tiamat's Wrath",
+        "source_duration": 300.0,
+        "start": 2.3
+      },
+      {
+        "file": "alt/Jefferson Mays/03 - Abaddons Gate.mp3",
+        "title": "Abaddon's Gate",
+        "source_duration": 300.0,
+        "start": 27.4
+      }
+    ]
+  },
+  "Kobna Holdbrook-Smith": {
+    "primary": "Kobna Holdbrook-Smith.mp3",
+    "samples": [
+      {
+        "file": "alt/Kobna Holdbrook-Smith/01 - Rivers of London.mp3",
+        "title": "Rivers of London",
+        "source_duration": 300.0,
+        "start": 107.4
+      },
+      {
+        "file": "alt/Kobna Holdbrook-Smith/02 - Our Lady of the Artilects.mp3",
+        "title": "Our Lady of the Artilects",
+        "source_duration": 439.6,
+        "start": 12.4
+      },
+      {
+        "file": "alt/Kobna Holdbrook-Smith/03 - A Rare Book of Cunning Device.mp3",
+        "title": "A Rare Book of Cunning Device",
+        "source_duration": 177.0,
+        "start": 100.3
+      }
+    ]
+  },
+  "Dan Stevens": {
+    "primary": "Dan Stevens.mp3",
+    "samples": [
+      {
+        "file": "alt/Dan Stevens/01 - Frankenstein.mp3",
+        "title": "Frankenstein",
+        "source_duration": 300.0,
+        "start": 4.5
+      },
+      {
+        "file": "alt/Dan Stevens/02 - And Then There Were None.mp3",
+        "title": "And Then There Were None",
+        "source_duration": 300.0,
+        "start": 125.3
+      },
+      {
+        "file": "alt/Dan Stevens/03 - Murder on the Orient Express.mp3",
+        "title": "Murder on the Orient Express",
+        "source_duration": 300.0,
+        "start": 236.1
+      }
+    ]
+  },
+  "Will Patton": {
+    "primary": "Will Patton.mp3",
+    "samples": [
+      {
+        "file": "alt/Will Patton/01 - Dead Mans Walk.mp3",
+        "title": "Dead Man's Walk",
+        "source_duration": 599.9,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Will Patton/02 - Boones Lick.mp3",
+        "title": "Boone's Lick",
+        "source_duration": 897.1,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Will Patton/03 - On the Road 50th Anniversary Edition.mp3",
+        "title": "On the Road (50th Anniversary Edition)",
+        "source_duration": 299.9,
+        "start": 225.8
+      }
+    ]
+  },
+  "James Marsters": {
+    "primary": "James Marsters.mp3",
+    "samples": [
+      {
+        "file": "alt/James Marsters/01 - Ghost Story.mp3",
+        "title": "Ghost Story",
+        "source_duration": 300.0,
+        "start": 5.2
+      },
+      {
+        "file": "alt/James Marsters/02 - Storm Front.mp3",
+        "title": "Storm Front",
+        "source_duration": 300.0,
+        "start": 15.9
+      },
+      {
+        "file": "alt/James Marsters/03 - Blood Rites.mp3",
+        "title": "Blood Rites",
+        "source_duration": 300.0,
+        "start": 25.7
+      }
+    ]
+  },
+  "Jim Dale": {
+    "primary": "Jim Dale.mp3",
+    "samples": [
+      {
+        "file": "alt/Jim Dale/01 - Liesl  Po.mp3",
+        "title": "Liesl & Po",
+        "source_duration": 300.0,
+        "start": 27.1
+      },
+      {
+        "file": "alt/Jim Dale/02 - Peter and the Wolf.mp3",
+        "title": "Peter and the Wolf",
+        "source_duration": 297.0,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Jim Dale/03 - Arthur and the Minimoys  Arthur and the Forbidden City.mp3",
+        "title": "Arthur and the Minimoys & Arthur and the Forbidden City",
+        "source_duration": 300.0,
+        "start": 21.2
+      }
+    ]
+  },
+  "George Guidall": {
+    "primary": "George Guidall.mp3",
+    "samples": [
+      {
+        "file": "alt/George Guidall/01 - American Assassin.mp3",
+        "title": "American Assassin",
+        "source_duration": 300.0,
+        "start": 218.7
+      },
+      {
+        "file": "alt/George Guidall/02 - Listening Woman.mp3",
+        "title": "Listening Woman",
+        "source_duration": 300.0,
+        "start": 73.5
+      },
+      {
+        "file": "alt/George Guidall/03 - Kill Shot.mp3",
+        "title": "Kill Shot",
+        "source_duration": 300.0,
+        "start": 225.0
+      }
+    ]
+  },
+  "Hugh Fraser": {
+    "primary": "Hugh Fraser.mp3",
+    "samples": [
+      {
+        "file": "alt/Hugh Fraser/01 - Halloween Party.mp3",
+        "title": "Hallowe'en Party",
+        "source_duration": 300.0,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Hugh Fraser/02 - The Unexpected Guest.mp3",
+        "title": "The Unexpected Guest",
+        "source_duration": 300.0,
+        "start": 235.3
+      },
+      {
+        "file": "alt/Hugh Fraser/03 - The Sittaford Mystery.mp3",
+        "title": "The Sittaford Mystery",
+        "source_duration": 300.0,
+        "start": 2.0
+      }
+    ]
+  },
+  "Neil Gaiman": {
+    "primary": "Neil Gaiman.mp3",
+    "samples": [
+      {
+        "file": "alt/Neil Gaiman/01 - Coraline.mp3",
+        "title": "Coraline",
+        "source_duration": 618.7,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Neil Gaiman/02 - Norse Mythology.mp3",
+        "title": "Norse Mythology",
+        "source_duration": 300.0,
+        "start": 29.7
+      },
+      {
+        "file": "alt/Neil Gaiman/03 - Neverwhere.mp3",
+        "title": "Neverwhere",
+        "source_duration": 300.0,
+        "start": 129.6
+      }
+    ]
+  },
+  "Stephen Fry": {
+    "primary": "Stephen Fry.mp3",
+    "samples": [
+      {
+        "file": "alt/Stephen Fry/01 - Stephen Frys Royal Secrets The Elizabethans.mp3",
+        "title": "Stephen Fry's Royal Secrets: The Elizabethans",
+        "source_duration": 300.0,
+        "start": 150.2
+      },
+      {
+        "file": "alt/Stephen Fry/02 - Ghost Stories Stephen Frys Definitive Collection.mp3",
+        "title": "Ghost Stories: Stephen Fry's Definitive Collection",
+        "source_duration": 244.9,
+        "start": 18.9
+      },
+      {
+        "file": "alt/Stephen Fry/03 - Harry Potter and the Goblet of Fire Book 4.mp3",
+        "title": "Harry Potter and the Goblet of Fire, Book 4",
+        "source_duration": 300.0,
+        "start": 18.5
+      }
+    ]
+  },
+  "Rupert Degas": {
+    "primary": "Rupert Degas.mp3",
+    "samples": [
+      {
+        "file": "alt/Rupert Degas/01 - The Wise Mans Fear.mp3",
+        "title": "The Wise Man's Fear",
+        "source_duration": 300.0,
+        "start": 3.2
+      },
+      {
+        "file": "alt/Rupert Degas/02 - The Arsne Lupin Collection Books 1  10.mp3",
+        "title": "The Arsène Lupin Collection: Books 1 - 10",
+        "source_duration": 205.9,
+        "start": 6.4
+      },
+      {
+        "file": "alt/Rupert Degas/03 - Zero Day Code.mp3",
+        "title": "Zero Day Code",
+        "source_duration": 300.0,
+        "start": 210.5
+      }
+    ]
+  },
+  "Nathaniel Parker": {
+    "primary": "Nathaniel Parker.mp3",
+    "samples": [
+      {
+        "file": "alt/Nathaniel Parker/01 - Far from the Madding Crowd.mp3",
+        "title": "Far from the Madding Crowd",
+        "source_duration": 367.2,
+        "start": 111.5
+      },
+      {
+        "file": "alt/Nathaniel Parker/02 - The Art of Murder.mp3",
+        "title": "The Art of Murder",
+        "source_duration": 600.0,
+        "start": 347.9
+      },
+      {
+        "file": "alt/Nathaniel Parker/03 - A Murderous Ride.mp3",
+        "title": "A Murderous Ride",
+        "source_duration": 600.0,
+        "start": 274.9
+      }
+    ]
+  },
+  "Simon Jones": {
+    "primary": "Simon Jones.mp3",
+    "samples": [
+      {
+        "file": "alt/Simon Jones/01 - The Unwanteds.mp3",
+        "title": "The Unwanteds",
+        "source_duration": 237.6,
+        "start": 83.7
+      },
+      {
+        "file": "alt/Simon Jones/02 - The Dragons Eye.mp3",
+        "title": "The Dragon's Eye",
+        "source_duration": 300.0,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Simon Jones/03 - Lionboy.mp3",
+        "title": "Lionboy",
+        "source_duration": 897.1,
+        "start": 52.2
+      }
+    ]
+  },
+  "Gerard Doyle": {
+    "primary": "Gerard Doyle.mp3",
+    "samples": [
+      {
+        "file": "alt/Gerard Doyle/01 - Brisingr.mp3",
+        "title": "Brisingr",
+        "source_duration": 300.0,
+        "start": 178.1
+      },
+      {
+        "file": "alt/Gerard Doyle/02 - Dubliners Tantor Edition.mp3",
+        "title": "Dubliners (Tantor Edition)",
+        "source_duration": 300.0,
+        "start": 190.0
+      },
+      {
+        "file": "alt/Gerard Doyle/03 - The Way Home.mp3",
+        "title": "The Way Home",
+        "source_duration": 300.0,
+        "start": 21.5
+      }
+    ]
+  },
+  "Allan Corduner": {
+    "primary": "Allan Corduner.mp3",
+    "samples": [
+      {
+        "file": "alt/Allan Corduner/01 - Magyk.mp3",
+        "title": "Magyk",
+        "source_duration": 277.4,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Allan Corduner/02 - The Antiquities of the Jews.mp3",
+        "title": "The Antiquities of the Jews",
+        "source_duration": 309.9,
+        "start": 14.0
+      },
+      {
+        "file": "alt/Allan Corduner/03 - Grim Tuesday.mp3",
+        "title": "Grim Tuesday",
+        "source_duration": 190.1,
+        "start": 8.5
+      }
+    ]
+  },
+  "Martin Jarvis": {
+    "primary": "Martin Jarvis.mp3",
+    "samples": [
+      {
+        "file": "alt/Martin Jarvis/01 - David Copperfield.mp3",
+        "title": "David Copperfield",
+        "source_duration": 141.8,
+        "start": 27.7
+      },
+      {
+        "file": "alt/Martin Jarvis/02 - A Tale of Two Cities.mp3",
+        "title": "A Tale of Two Cities",
+        "source_duration": 176.2,
+        "start": 24.1
+      },
+      {
+        "file": "alt/Martin Jarvis/03 - Great Expectations.mp3",
+        "title": "Great Expectations",
+        "source_duration": 171.5,
+        "start": 15.0
+      }
+    ]
+  },
+  "Rob Inglis": {
+    "primary": "Rob Inglis.mp3",
+    "samples": [
+      {
+        "file": "alt/Rob Inglis/01 - The Lord of the Rings.mp3",
+        "title": "The Lord of the Rings",
+        "source_duration": 300.0,
+        "start": 29.7
+      },
+      {
+        "file": "alt/Rob Inglis/02 - The Return of the King.mp3",
+        "title": "The Return of the King",
+        "source_duration": 300.0,
+        "start": 3.4
+      },
+      {
+        "file": "alt/Rob Inglis/03 - The Two Towers.mp3",
+        "title": "The Two Towers",
+        "source_duration": 300.0,
+        "start": 184.4
+      }
+    ]
+  },
+  "Lenny Henry": {
+    "primary": "Lenny Henry.mp3",
+    "samples": [
+      {
+        "file": "alt/Lenny Henry/01 - Anansi Boys.mp3",
+        "title": "Anansi Boys",
+        "source_duration": 600.1,
+        "start": 411.6
+      },
+      {
+        "file": "alt/Lenny Henry/02 - Who Am I Again.mp3",
+        "title": "Who Am I, Again?",
+        "source_duration": 300.0,
+        "start": 2.0
+      },
+      {
+        "file": "alt/Lenny Henry/03 - Lenny Henry in Othello.mp3",
+        "title": "Lenny Henry in Othello",
+        "source_duration": 152.3,
+        "start": 27.0
+      }
+    ]
+  },
+  "David Tennant": {
+    "primary": "David Tennant.mp3",
+    "samples": [
+      {
+        "file": "alt/David Tennant/01 - Doctor Who Dead Air.mp3",
+        "title": "Doctor Who: Dead Air",
+        "source_duration": 163.4,
+        "start": 2.0
+      },
+      {
+        "file": "alt/David Tennant/02 - How to Train Your Dragon Collection.mp3",
+        "title": "How to Train Your Dragon Collection",
+        "source_duration": 300.0,
+        "start": 200.0
+      },
+      {
+        "file": "alt/David Tennant/03 - Silver Return to Treasure Island.mp3",
+        "title": "Silver: Return to Treasure Island",
+        "source_duration": 300.0,
+        "start": 2.0
+      }
+    ]
+  },
+  "Jeremy Irons": {
+    "primary": "Jeremy Irons.mp3",
+    "samples": [
+      {
+        "file": "alt/Jeremy Irons/01 - The Alchemist.mp3",
+        "title": "The Alchemist",
+        "source_duration": 300.0,
+        "start": 233.9
+      },
+      {
+        "file": "alt/Jeremy Irons/02 - The Steadfast Tin Soldier.mp3",
+        "title": "The Steadfast Tin Soldier",
+        "source_duration": 34.0,
+        "start": 0.0
+      },
+      {
+        "file": "alt/Jeremy Irons/03 - Lolita.mp3",
+        "title": "Lolita",
+        "source_duration": 299.9,
+        "start": 2.0
+      }
+    ]
+  }
+}
