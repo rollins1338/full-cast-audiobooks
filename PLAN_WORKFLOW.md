@@ -206,6 +206,17 @@ reports back:
 Subagents never edit `book.json` or `bible.md`. You, the main agent, add new
 characters to the cast, then tell the affected subagents.
 
+**Late additions.** The user approved the cast in step 3, so every character
+added after that is unapproved:
+- Before adding one, check it isn't an alias of an existing character, or a
+  minor speaker you could reuse (`Guard 1`). Add a new name only when
+  neither fits.
+- Give it a **provisional** voice, chosen by gender and age like the rest,
+  and record it in `books/<slug>/late_cast.md`: name, provisional voice,
+  first paragraph ID, a one-line description and roughly how many lines it
+  has.
+- Don't stop labelling to ask. The user reviews these in step 7.
+
 For each chapter write `books/<slug>/segments/<id>.json`, one segment per
 line:
 
@@ -442,6 +453,13 @@ speech or thought. That includes italics that might be either a thought or
 just emphasis (rule 7). Use the same format, with
 `Options: Narrator / <character>`.
 
+**Late cast additions are always asked**, main or minor. If
+`late_cast.md` has any entries, put them at the top of `questions.md` under
+`## New characters`, one row each: name, provisional voice, first paragraph
+ID, description and line count. The user confirms or changes each voice, and
+may merge a character into an existing one; apply that in `book.json` and
+`segments/` before step 8.
+
 Write them all to `books/<slug>/questions.md` and show the list to the user
 in chat. Number every question, and show each one like this:
 
@@ -515,7 +533,8 @@ over 80% of the book.
   choice, and which chapters use which narration voice and why.
 - **Cast decisions.** Merged or renamed characters, minor speakers grouped
   under one name (`Waiter`, `Guard 1`), and voices shared between
-  characters.
+  characters. List every late cast addition with the voice it ended up
+  with, and whether the user confirmed or changed it.
 - **Judgment calls by category, with counts.**
   - untagged back-and-forth runs resolved by content
   - pronoun tags resolved
