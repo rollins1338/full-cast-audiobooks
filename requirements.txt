@@ -1,0 +1,12 @@
+# Core pipeline + XTTS-v2 renderer
+beautifulsoup4
+lxml
+coqui-tts[codec]==0.27.5
+transformers==4.57.6
+torch
+torchaudio
+numpy
+psutil
+rich
+
+# System dependency: ffmpeg + ffprobe must be on PATH.

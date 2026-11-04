@@ -8,6 +8,17 @@
    options (`--check`, `--audition`, `--chapters`, `--voice "Name=Voice"`).
    It resumes after Ctrl+C, and a voice swap re-renders only that speaker's lines.
 
+## Setup
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+XTTS also needs `ffmpeg`/`ffprobe` on `PATH`, and the Coqui license accepted once
+(`export COQUI_TOS_AGREED=1`). The model weights download on first render.
+
 ## Repo layout
 
 - `sources/` — input EPUBs (one per book)
