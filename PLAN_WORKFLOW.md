@@ -1,5 +1,9 @@
 # Making a full-cast plan.json for any book
 
+Use this file with **DeepSeek Flash**. Point it at this workflow and the EPUB,
+and tell it to follow every step exactly. It must use `plan_tools.py` and read
+the book line by line — no regex or alternating-turn speaker guessing.
+
 You are turning an EPUB into a speaker-labelled plan that `render.sh` renders.
 **Your job is judgment: who says each line.** All the mechanical work
 (extraction, text fidelity checks, plan assembly, voice paths) is done by
