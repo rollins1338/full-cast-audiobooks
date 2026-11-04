@@ -10,8 +10,10 @@
 
 ## Setup
 
+Use **Python 3.10–3.12** (PyTorch/Coqui wheels do not support 3.14 yet).
+
 ```bash
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
