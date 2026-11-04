@@ -7,7 +7,7 @@
 2. **Render**: `./render.sh books/<slug>/plan.json`. Run with `--help` for
    options (`--check`, `--audition`, `--chapters`, `--voice "Name=Voice"`).
    It resumes after Ctrl+C, and a voice swap re-renders only that speaker's lines.
-3. **Merge/master**: `./run_wav_web.sh output/<book>/*.wav` opens a local browser
+3. **Merge/master**: `./wav_merger/run_wav_web.sh output/<book>/*.wav` opens a local browser
    UI that joins the chapter WAVs into one mastered audiobook (WAV + M4B).
 
 ## Setup
@@ -28,6 +28,7 @@ XTTS also needs `ffmpeg`/`ffprobe` on `PATH`, and the Coqui license accepted onc
 - `sources/` — input EPUBs (one per book)
 - `books/<slug>/` — per-book extraction, labels and `plan.json`
 - `voices/` — XTTS reference clips + `voice_catalog.json`
+- `wav_merger/` — standalone chapter-WAV merger/mastering UI
 - `output/<book>/` — finished renders; never deleted by cleanup
 
 ## Voice references
@@ -45,21 +46,21 @@ the only browser UI, and it only joins and masters finished chapter files.
 
 ## Merging rendered chapters into one audiobook
 
-The renderer writes one WAV per chapter (`001.wav`, `002.wav`, …). Use the
-bundled WAV merger to combine them, apply ACX loudness/peak mastering, and
-export an M4B with chapter markers:
+The renderer writes one WAV per chapter (`001.wav`, `002.wav`, …). The
+self-contained `wav_merger/` app combines them, applies ACX loudness/peak
+mastering, and exports an M4B with chapter markers:
 
 ```bash
 # opens http://localhost:8775 and preloads the folder's WAVs
-./run_wav_web.sh output/<book>/*.wav
+./wav_merger/run_wav_web.sh output/<book>/*.wav
 
 # or start empty and pick files/folder in the UI
-./run_wav_web.sh
+./wav_merger/run_wav_web.sh
 ```
 
-- `wav_web.py` — local web UI/server
-- `wav_merge_engine.py` — FFmpeg merge, gap/crossfade, ACX mastering, M4B export
-- `run_wav_web.sh` — launcher (uses `.venv`, `python3.12`, or `python3`)
+- `wav_merger/wav_web.py` — local web UI/server
+- `wav_merger/wav_merge_engine.py` — FFmpeg merge, gap/crossfade, ACX mastering, M4B export
+- `wav_merger/run_wav_web.sh` — launcher (uses `.venv`, `python3.12`, or `python3`)
 
 It is pure Python stdlib; only `ffmpeg`/`ffprobe` need to be installed. Output is
 `<name>_ACX_Mastered.wav` plus `<name>_ACX_Mastered.m4b`. Chapter order follows
