@@ -7,6 +7,8 @@
 2. **Render**: `./render.sh books/<slug>/plan.json`. Run with `--help` for
    options (`--check`, `--audition`, `--chapters`, `--voice "Name=Voice"`).
    It resumes after Ctrl+C, and a voice swap re-renders only that speaker's lines.
+3. **Merge/master**: `./run_wav_web.sh output/<book>/*.wav` opens a local browser
+   UI that joins the chapter WAVs into one mastered audiobook (WAV + M4B).
 
 ## Setup
 
@@ -37,15 +39,37 @@ For other cast members, use `prepare_reference.py` on a clean 30–60 s speech c
 
 The notes below describe the older `audiobook.py` commands.
 
-This repository is command line only. It renders speech locally with Coqui
-XTTS-v2 and the voice references in `voices/`. There is no web server,
-frontend, API, or diagnostic-tone fallback in the normal renderer.
+The renderer itself is command line only. It renders speech locally with Coqui
+XTTS-v2 and the voice references in `voices/`. The separate WAV merger below is
+the only browser UI, and it only joins and masters finished chapter files.
+
+## Merging rendered chapters into one audiobook
+
+The renderer writes one WAV per chapter (`001.wav`, `002.wav`, …). Use the
+bundled WAV merger to combine them, apply ACX loudness/peak mastering, and
+export an M4B with chapter markers:
+
+```bash
+# opens http://localhost:8775 and preloads the folder's WAVs
+./run_wav_web.sh output/<book>/*.wav
+
+# or start empty and pick files/folder in the UI
+./run_wav_web.sh
+```
+
+- `wav_web.py` — local web UI/server
+- `wav_merge_engine.py` — FFmpeg merge, gap/crossfade, ACX mastering, M4B export
+- `run_wav_web.sh` — launcher (uses `.venv`, `python3.12`, or `python3`)
+
+It is pure Python stdlib; only `ffmpeg`/`ffprobe` need to be installed. Output is
+`<name>_ACX_Mastered.wav` plus `<name>_ACX_Mastered.m4b`. Chapter order follows
+the filenames, so keep the zero-padded `001.wav` naming.
 
 Use the shared environment:
 
 ```bash
-/home/rxxfxx/bots/dramione/.venv/bin/python audiobook.py validate books/<slug>/plan.json
-/home/rxxfxx/bots/dramione/.venv/bin/python audiobook.py render-book full_book_plan.json output/full_book
+.venv/bin/python audiobook.py validate books/<slug>/plan.json
+.venv/bin/python audiobook.py render-book full_book_plan.json output/full_book
 ```
 
 `render-book` (also available as `render`) writes one lossless mono 24 kHz
@@ -57,8 +81,8 @@ an error; it never writes a tone and labels it as speech.
 Create a short plan from an EPUB:
 
 ```bash
-/home/rxxfxx/bots/dramione/.venv/bin/python audiobook.py sample-plan book.epub -o sample_plan.json
-/home/rxxfxx/bots/dramione/.venv/bin/python audiobook.py render sample_plan.json output/sample
+.venv/bin/python audiobook.py sample-plan book.epub -o sample_plan.json
+.venv/bin/python audiobook.py render sample_plan.json output/sample
 ```
 
 Set `COQUI_TOS_AGREED=1` after accepting the XTTS license once. FFmpeg must be
