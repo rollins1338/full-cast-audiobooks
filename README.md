@@ -121,7 +121,7 @@ and exports an **M4B with chapter markers**.
 
 ### 1 · Clone
 
-This repo is private, so use an account that has access:
+Clone this repo first:
 
 ```bash
 git clone https://github.com/rollins1338/full-cast-audiobooks.git
