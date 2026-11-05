@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Book -> plan.json tooling. Standard library only, so any python3 runs it.
 
-    python3 plan_tools.py extract book.epub books/<slug>     # numbered paragraphs
+    python3 plan_tools.py totext  book.epub books/<slug>     # -> books/<slug>/book.txt to edit
+    python3 plan_tools.py extract books/<slug>/book.txt books/<slug>   # numbered paragraphs
+                                                             # (a .epub works here too)
     python3 plan_tools.py verify  books/<slug> [--chapter 003]
     python3 plan_tools.py build   books/<slug>               # -> books/<slug>/plan.json
     python3 plan_tools.py stats   books/<slug> | plan.json   # who speaks how much
@@ -88,26 +90,100 @@ def spine_documents(epub: Path):
                 yield meta, href, z.read(unquote(href)).decode("utf-8", "replace")
 
 
+def epub_units(epub: Path):
+    """[(unit id, href, paragraphs)] for every non-empty spine document, plus the book metadata."""
+    units, meta = [], {}
+    for n, (meta, href, html) in enumerate(spine_documents(epub)):
+        parser = Paragraphs()
+        parser.feed(html)
+        parser.flush()
+        if parser.out:
+            units.append((f"u{n:03d}", href, parser.out))
+    return units, meta
+
+
+TXT_HELP = """\
+# Edit freely. Lines starting with "# " are comments. Paragraphs are separated by blank lines;
+# a paragraph may wrap over several lines. Each "=== uNNN ===" line starts a section: keep these
+# lines as they are. Delete a whole section (marker and text) to drop it from the book.
+"""
+UNIT_LINE = re.compile(r"^===\s*(u\d{3})\s*===")
+
+
+def txt_units(path: Path):
+    """Parse a book.txt written by totext (and edited by the user) back into units."""
+    units, meta, block, seen = [], {}, [], set()
+
+    def end_paragraph():
+        text = re.sub(r"\s+", " ", " ".join(block)).strip()
+        if re.search(r"\w", text):
+            units[-1][2].append(text)
+        block.clear()
+
+    for no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        m = UNIT_LINE.match(line)
+        if m:
+            if units:
+                end_paragraph()
+            if m.group(1) in seen:
+                sys.exit(f"{path}:{no}: section {m.group(1)} appears twice")
+            seen.add(m.group(1))
+            href = line.partition("#")[2].strip() if "#" in line[m.end():] else None
+            units.append((m.group(1), href, []))
+        elif line.startswith("# ") or line.strip() == "#":
+            key, _, value = line[1:].partition(":")
+            if not units and key.strip().lower() in ("title", "author") and value.strip():
+                meta["title" if key.strip().lower() == "title" else "creator"] = value.strip()
+        elif not line.strip():
+            if units:
+                end_paragraph()
+        elif not units:
+            sys.exit(f"{path}:{no}: text before the first '=== uNNN ===' section line")
+        else:
+            block.append(line)
+    if units:
+        end_paragraph()
+    return [u for u in units if u[2]], meta
+
+
+def cmd_totext(args):
+    dest = Path(args.book_dir) / "book.txt"
+    if dest.exists() and not args.force:
+        print(f"{dest} already exists (it may hold your edits). Use --force to overwrite it.")
+        return 1
+    units, meta = epub_units(Path(args.epub))
+    out = [f"# Title: {meta.get('title') or ''}", f"# Author: {meta.get('creator') or ''}", TXT_HELP]
+    for uid, href, paras in units:
+        out.append(f"=== {uid} ===  # {href}\n")
+        out += [p + "\n" for p in paras]
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text("\n".join(out), encoding="utf-8")
+    print(f"{len(units)} units, {sum(len(u[2]) for u in units)} paragraphs, "
+          f"{sum(len(p.split()) for u in units for p in u[2])} words -> {dest}")
+    print(f"Title: {meta.get('title')!r}  Author: {meta.get('creator')!r}")
+    return 0
+
+
 def cmd_extract(args):
     book_dir = Path(args.book_dir)
     out = book_dir / "extract"
     out.mkdir(parents=True, exist_ok=True)
-    index, meta = [], {}
-    for n, (meta, href, html) in enumerate(spine_documents(Path(args.epub))):
-        parser = Paragraphs()
-        parser.feed(html)
-        parser.flush()
-        if not parser.out:
-            continue
-        uid = f"u{n:03d}"
-        lines = [f"{uid}p{i:04d} | {p}" for i, p in enumerate(parser.out)]
+    src = Path(args.epub)
+    from_txt = src.suffix.lower() == ".txt"
+    units, meta = txt_units(src) if from_txt else epub_units(src)
+    for stale in out.glob("u*.txt"):
+        stale.unlink()
+    index = []
+    for uid, href, paras in units:
+        lines = [f"{uid}p{i:04d} | {p}" for i, p in enumerate(paras)]
         (out / f"{uid}.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
-        index.append({"unit": uid, "href": href, "paragraphs": len(parser.out),
-                      "words": sum(len(p.split()) for p in parser.out),
-                      "starts_with": parser.out[0][:80]})
+        index.append({"unit": uid, "href": href, "paragraphs": len(paras),
+                      "words": sum(len(p.split()) for p in paras),
+                      "starts_with": paras[0][:80]})
     (out / "index.json").write_text(json.dumps(
-        {"epub": str(Path(args.epub).resolve()), "title": meta.get("title"),
-         "author": meta.get("creator"), "units": index}, indent=1, ensure_ascii=False), encoding="utf-8")
+        {"epub": None if from_txt else str(src.resolve()), **({"source": str(src.resolve())} if from_txt else {}),
+         "title": meta.get("title"), "author": meta.get("creator"), "units": index},
+        indent=1, ensure_ascii=False), encoding="utf-8")
     print(f"{len(index)} units, {sum(u['paragraphs'] for u in index)} paragraphs, "
           f"{sum(u['words'] for u in index)} words -> {out}")
     print(f"Title: {meta.get('title')!r}  Author: {meta.get('creator')!r}")
@@ -446,12 +522,18 @@ def cmd_stats(args):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    p = sub.add_parser("extract"); p.add_argument("epub"); p.add_argument("book_dir")
+    p = sub.add_parser("totext", help="EPUB -> books/<slug>/book.txt for the user to edit")
+    p.add_argument("epub"); p.add_argument("book_dir")
+    p.add_argument("--force", action="store_true", help="overwrite an existing book.txt")
+    p = sub.add_parser("extract", help="book.txt (or .epub) -> numbered paragraphs")
+    p.add_argument("epub", metavar="book.txt|book.epub"); p.add_argument("book_dir")
     p = sub.add_parser("verify"); p.add_argument("book_dir"); p.add_argument("--chapter")
     p = sub.add_parser("stats"); p.add_argument("target", help="books/<slug> or any plan.json")
     p = sub.add_parser("build"); p.add_argument("book_dir")
     p.add_argument("--allow-warnings", action="store_true", help="build even with unreviewed warnings")
     args = ap.parse_args()
+    if args.cmd == "totext":
+        return cmd_totext(args)
     if args.cmd == "verify":
         return cmd_verify(args)
     if args.cmd == "stats":

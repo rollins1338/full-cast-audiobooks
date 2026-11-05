@@ -261,7 +261,8 @@ wrong all the time, so a model **reads every line**, following
 
 | Step | What happens |
 | :---: | --- |
-| 1 | **Extract:** split the EPUB into numbered paragraphs, keeping italics. |
+| 0 | **Clean text:** turn the EPUB into `book.txt`, strip the non-story pages, and stop for you to edit it. |
+| 1 | **Extract:** split your edited `book.txt` into numbered paragraphs, keeping italics. |
 | 2 | **Bible:** read the whole book and note the narrator, POV style, cast, aliases and how each character talks. Big books are split across parallel scouts. |
 | 3 | **Cast:** write `book.json` and stop for you to approve the cast and voices. |
 | 4 | **Label:** parallel workers (ACP delegates and subagents) label the chapters, following 11 attribution rules. |
@@ -269,7 +270,7 @@ wrong all the time, so a model **reads every line**, following
 | 6 | **Review:** fresh reviewers re-check every chapter independently. |
 | 7 | **Ask:** anything still uncertain about the main characters comes to you, with context. |
 | 8 | **Build:** a final pass, then `plan.json`. |
-| 9 | **Report:** the dialogue share per speaker, plus the decisions it made. |
+| 9 | **Report:** the dialogue share per speaker, plus the decisions it made. It never starts the render; you do. |
 
 #### Point-of-view modes
 
@@ -289,7 +290,8 @@ Quoted dialogue never goes to the narrator voice.
 Standard library only, so any `python3` runs it.
 
 ```bash
-python3 plan_tools.py extract sources/book.epub books/<slug>   # numbered paragraphs
+python3 plan_tools.py totext  sources/book.epub books/<slug>    # book.txt to edit
+python3 plan_tools.py extract books/<slug>/book.txt books/<slug> # numbered paragraphs
 python3 plan_tools.py verify  books/<slug> [--chapter 003]     # text fidelity + label warnings
 python3 plan_tools.py build   books/<slug>                     # -> books/<slug>/plan.json
 python3 plan_tools.py stats   books/<slug>                     # who speaks how much
@@ -336,7 +338,7 @@ full-cast-audiobooks/
 ├── 🎬 render.sh              launcher: dashboard, resume, auto-restart
 ├── 🔊 render_engine.py       XTTS-v2 renderer behind render.sh
 ├── 🧠 PLAN_WORKFLOW.md       how the model turns a book into plan.json
-├── 🛠️ plan_tools.py          extract · verify · build · stats
+├── 🛠️ plan_tools.py          totext · extract · verify · build · stats
 ├── 📚 sources/               your EPUBs (git-ignored)
 ├── 📁 books/<slug>/          per-book extraction, labels and plan.json
 ├── 🎙️ voices/                voice catalogue (clips git-ignored)

@@ -14,6 +14,10 @@ what has failed before: **you read every line and decide.**
 Run everything from the repo root (the folder containing `plan_tools.py`).
 `<slug>` is a short book name like `my_book`.
 
+> **Two stops are always the user's.** After Step 0 you stop until the user
+> has edited `book.txt` and says go. After Step 9 you stop for good: the
+> user starts the render.
+>
 > **Never start a render.** Your job ends when `plan.json` and the report are
 > done. Rendering always waits for the user's go-ahead, and the user starts it
 > themselves. Don't run `./render.sh` without `--check`, don't render a test
@@ -72,11 +76,53 @@ the API starts returning rate-limit errors, run fewer at once.
 
 ---
 
-## Step 1: Extract
+## Step 0: Make the clean text, then STOP
 
 ```bash
-python3 plan_tools.py extract "<book>.epub" books/<slug>
+python3 plan_tools.py totext "<book>.epub" books/<slug>
 ```
+
+This writes `books/<slug>/book.txt`: the whole book as plain text, one
+paragraph per block, with a `=== uNNN ===` line starting each EPUB section.
+Italics are kept as `*like this*`. Lines starting with `# ` are comments.
+
+Clean it, editing `book.txt` in place:
+
+- **Delete non-story sections** with their `===` line: copyright page,
+  table of contents, dedication, acknowledgements, "about the author",
+  newsletter or social media plugs, and previews or ads for other books.
+  Keep the title page only if it reads well aloud.
+- **Fix extraction junk:** stray page numbers, a chapter heading printed
+  twice, words broken by a hyphen at a line end, footnote markers,
+  leftover markup.
+- **Don't change the story.** No rewording, no cuts, no fixing the
+  author's grammar or spelling. Keep every chapter heading.
+- Don't touch the `=== uNNN ===` lines, and don't add your own sections.
+
+On a big book, split the cleaning across helpers by section, one helper
+per range of sections, each editing only its own range.
+
+Then **STOP and tell the user:**
+
+- the path to `book.txt`, and its section, paragraph and word counts;
+- each section you deleted, and what kinds of junk you fixed.
+
+The user edits `book.txt` however they like: cuts a scene, rewrites a
+passage, renames something. **Wait for their go-ahead.** Don't run Step 1,
+read ahead or start the bible until they say go, however long it takes.
+
+## Step 1: Extract
+
+Only after the user's go-ahead on Step 0:
+
+```bash
+python3 plan_tools.py extract books/<slug>/book.txt books/<slug>
+```
+
+From here on `book.txt` is the book. Don't go back to the EPUB, and don't
+edit `book.txt` yourself. If the user edits it again later, run this step
+again. Paragraph IDs can shift in the sections they changed, so redo those
+chapters from Step 4.
 
 This writes `books/<slug>/extract/uNNN.txt`, one file per EPUB section.
 Every paragraph gets an ID:
