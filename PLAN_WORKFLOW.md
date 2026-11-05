@@ -14,28 +14,61 @@ what has failed before: **you read every line and decide.**
 Run everything from the repo root (the folder containing `plan_tools.py`).
 `<slug>` is a short book name like `my_book`.
 
-### Delegates (ACP)
+> **Never start a render.** Your job ends when `plan.json` and the report are
+> done. Rendering always waits for the user's go-ahead, and the user starts it
+> themselves. Don't run `./render.sh` without `--check`, don't render a test
+> chapter or a sample, and don't tell a helper to. This holds even when
+> everything passes, even when you have time left, and even if an earlier
+> message seemed to allow it. `./render.sh ... --check` is fine: it only
+> prints the cast table, stats and a time estimate.
 
-Steps 4 and 6 hand chapters to **ACP delegates**: separate DeepSeek runs
-started with pi's built-in delegate tools.
+### Helpers: subagents and ACP delegates
+
+You don't have to do the reading alone. Run helpers in parallel, as many and
+as often as the book needs. **You have full permission to design the setup
+yourself:** how many helpers, how big each batch is, which tool runs which
+job, and whether to add extra passes (a reconcile pass, a third review, a
+spot check). You don't need to ask the user about any of that.
+
+Every helper runs **DeepSeek Flash 4.1** (`opencode-go/deepseek-v4.1-flash`),
+the same model as you. ACP delegates inherit your model. For subagents, use
+an agent with no `model` line, or one set to that model.
+
+Use both kinds, together:
+
+| Kind | Tools | Best for |
+| --- | --- | --- |
+| **ACP delegates** | `acp_delegate`, `acp_delegate_wait`, `acp_delegate_cancel`, `acp_delegate_list` | Long background batches: scouting (step 2), labelling (step 4), review (step 6). They run while you keep working; up to 6 at a time, the rest queue. |
+| **Subagents** | the client's subagent tool (for example pi's `subagent`, with parallel `tasks`) | Short jobs whose answer you need before you go on: settle an alias question, re-check one chapter, compare two readings of a passage. |
+
+When the delegate queue is full, subagents add more parallel capacity. If
+the API starts returning rate-limit errors, run fewer at once.
+
+**ACP delegate tools:**
 
 | Tool | Use |
 | --- | --- |
-| `acp_delegate` | Start one. Pass `agent` (`"worker"` to label, `"reviewer"` to review), `task` (the full brief), `async: true`, and optionally `timeoutMinutes`. Returns a `runId`. |
+| `acp_delegate` | Start one. Pass `agent` (`"worker"` to scout or label, `"reviewer"` to review), `task` (the full brief), `async: true`, and optionally `timeoutMinutes`. Returns a `runId`. |
 | `acp_delegate_wait` | Collect a result: `runId`, plus `timeout` in ms (e.g. `240000`). If it times out, the delegate is still running, so call it again. |
 | `acp_delegate_cancel` | Stop a delegate that's stuck or was given the wrong brief. |
+| `acp_delegate_list` | See what's queued, running and finished. |
 
-- **A delegate starts with no context.** It hasn't seen this conversation,
-  the bible or any earlier decision. Its `task` must say everything: which
+**Rules for every helper, whichever tool runs it:**
+- **A helper starts with no context.** It hasn't seen this conversation,
+  the bible or any earlier decision. Its brief must say everything: which
   files to read (by path), which chapter IDs it owns, what to write, and
   what to report back.
-- Start every batch with `async: true` first, then wait on them one by one.
-  Don't run batches one after another.
-- You can't message a delegate while it runs. Anything it needs has to be
-  in the brief; anything you learn later goes in a fix pass or a new
-  delegate.
-- If the delegate tools aren't available, say so. Use whatever subagent
-  tool the client has, or do the batches yourself, one at a time.
+- Start a whole wave of delegates first (`async: true`), then collect them
+  one by one. Don't run batches one after another.
+- You can't message a helper while it runs. Anything it needs has to be in
+  the brief; anything you learn later goes in a fix pass or a new helper.
+- Helpers never write `book.json`, `bible.md` or `reviewed.json`. Those are
+  yours.
+- Two helpers never write the same file.
+- The user's checkpoints don't move: the cast approval in step 3 and the
+  questions in step 7 are always yours to bring to the user.
+- If neither tool is available, say so, and do the batches yourself, one
+  at a time.
 
 ---
 
@@ -58,8 +91,16 @@ u007p0012 | “Hand me the map,” Mom said.
 
 ## Step 2: Read the whole book, write the bible
 
-Read **every** `extract/u*.txt` from start to finish before labelling
-anything. Then write `books/<slug>/bible.md` containing:
+Nothing gets labelled until the whole book has been read. How it gets read
+depends on its size. Check the word counts in `extract/index.json`.
+
+- **Small book** (it fits comfortably in your context with room to work,
+  roughly under 100k words): read **every** `extract/u*.txt` yourself, from
+  start to finish.
+- **Big book** (anything larger, or a series omnibus): split the reading
+  across helpers. See "Big books: the scout pass" below.
+
+Either way, you end with `books/<slug>/bible.md` containing:
 
 - **Narration mode per chapter.**
   - *Third person* (`he/she` prose): narration is spoken by `Narrator`.
@@ -80,6 +121,45 @@ anything. Then write `books/<slug>/bible.md` containing:
   Keep their count small and reuse names.
 - **Traps.** Twins, two people with the same nickname, a character whose
   name changes, flashbacks, phone calls, text messages, letters.
+
+### Big books: the scout pass
+
+1. **Slice the book.** Cut the chapters, in reading order, into slices of
+   roughly 20–30k words. Never split a chapter across slices.
+2. **Send out scouts.** Give each slice to its own helper (ACP delegates
+   with `agent: "worker"`; add subagents if you want more running at once).
+   Each brief includes this file's Step 2, the slice's extract file paths,
+   and the output path `books/<slug>/scout/<first unit>-<last unit>.md`.
+   Each scout reads its slice in full and writes, citing paragraph IDs
+   throughout:
+   - **Per chapter:** narration mode (first person, third person, possibly
+     deep POV), the POV character, any mid-chapter POV switch, and any POV
+     header line.
+   - **Characters met:** every name and alias exactly as the text uses it,
+     gender and age clues, relationships, speech habits, the first
+     paragraph where they speak, and roughly how many lines they have.
+   - **Unnamed speakers** (`the bartender`, `a girl in the hall`).
+   - **Deep-POV evidence:** a few paragraphs where narration slides into a
+     character's own thoughts, and a few where it doesn't.
+   - **Traps** in the list above, and **open questions** ("is 'the boss'
+     in u031p0040 Logan?").
+3. **Merge them yourself.** Read `extract/index.json`, every scout report,
+   the first chapter in full, and every paragraph a scout cites as a trap
+   or open question. Merge the reports into `bible.md`:
+   - The same person under two names in two slices becomes one character
+     with aliases.
+   - Two different people sharing a name stay separate, with a trap note.
+   - Pick the narration mode and POV characters for the whole book.
+4. **Settle conflicts and gaps.** When scouts disagree, or a question needs
+   more reading than a few paragraphs, send a subagent to answer it with
+   the exact paragraph ranges, or read them yourself. If a slice's report
+   is thin or confused, send that slice to a fresh scout.
+5. **Optional reconcile pass.** For a long series or a huge cast, send the
+   draft bible back out to fresh scouts, one per slice, to check every
+   character and alias against their slice. Merge their corrections.
+
+The scouts' reading is the bible's evidence: make the step 3 cast and the
+step 4 briefs from it, and keep `scout/` until the plan is built.
 
 ### Deep POV books (deep third person limited)
 
@@ -206,14 +286,15 @@ automatically:
   `"announce_by": "<speaker>"` to change who says it. The book
   `announcement` plays before chapter 1.
 
-## Step 4: Label the chapters (parallel ACP delegates)
+## Step 4: Label the chapters (parallel helpers)
 
 Once the user has approved the cast, split the chapters into batches of
 about 3–5 and hand each batch to its own **worker** delegate
 (`acp_delegate`, `agent: "worker"`, `async: true`). Start all of them, then
-collect each one with `acp_delegate_wait`.
+collect each one with `acp_delegate_wait`. Subagents can take batches too
+when you want more running at once; they follow the same rules.
 
-Each brief includes (files by path, since the delegate starts with no context):
+Each brief includes (files by path, since the helper starts with no context):
 - this file
 - `bible.md` and `book.json`
 - its chapter IDs
@@ -406,11 +487,11 @@ python3 plan_tools.py verify books/<slug> --chapter 001
 Don't move to the next chapter until its verify shows `0 errors, 0
 unreviewed warnings`.
 
-## Step 6: Independent review (second check, parallel ACP delegates)
+## Step 6: Independent review (second check, parallel helpers)
 
-Every chapter is checked a second time by a **fresh reviewer** delegate
-(`acp_delegate`, `agent: "reviewer"`, `async: true`): never the worker that
-labelled it. It doesn't see the labeller's reasoning, only the result.
+Every chapter is checked a second time by a **fresh reviewer**: an ACP
+delegate (`acp_delegate`, `agent: "reviewer"`, `async: true`) or a subagent,
+never the worker that labelled it. It doesn't see the labeller's reasoning, only the result.
 Reviewers read whole chapters slowly, so give them a long limit (e.g.
 `timeoutMinutes: 75`).
 
@@ -579,7 +660,9 @@ over 80% of the book.
 - **Remaining risks.** Any spot you would still double-check by listening,
   with chapter and paragraph ID. If there are none, say so.
 
-Then render. You don't start this; the user does:
+**Stop here.** Post the report and end your turn. Do not render. The user
+reads the report and gives the final go-ahead, then runs the render
+themselves:
 
 ```bash
 ./render.sh books/<slug>/plan.json --check     # cast table, stats, time estimate
@@ -588,13 +671,14 @@ Then render. You don't start this; the user does:
 
 ## Efficiency notes
 
-- The main agent reads the book once fully (step 2) and stays in charge:
-  it owns `book.json`, `bible.md`, `reviewed.json` and every final
-  decision. ACP delegates do the chapter-by-chapter reading in steps 4
-  and 6.
+- The main agent stays in charge: it owns `book.json`, `bible.md`,
+  `reviewed.json` and every final decision. It reads a small book fully in
+  step 2; on a big book the scouts read it and the main agent reads their
+  reports plus the passages they flag. Helpers do the chapter-by-chapter
+  reading in steps 4 and 6.
 - Workers and reviewers each re-read only their own chapters,
   plus the end of the previous chapter for scene continuity.
-- Never let two delegates write the same file.
+- Never let two helpers write the same file.
 - Write each chapter file in one go, then run verify. Fix everything in one
   edit pass, then verify again.
 - Don't print whole extract files back into the chat. Read them with your
