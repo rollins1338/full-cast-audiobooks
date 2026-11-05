@@ -96,19 +96,72 @@ Clean it, editing `book.txt` in place:
   twice, words broken by a hyphen at a line end, footnote markers,
   leftover markup.
 - **Don't change the story.** No rewording, no cuts, no fixing the
-  author's grammar or spelling. Keep every chapter heading.
+  author's grammar or spelling. Keep every chapter heading. Pronunciation
+  fixes are proposals for the user (see below), not cleaning.
 - Don't touch the `=== uNNN ===` lines, and don't add your own sections.
 
 On a big book, split the cleaning across helpers by section, one helper
 per range of sections, each editing only its own range.
 
+### XTTS quirks: find them, propose fixes, ask the user
+
+The renderer (XTTS-v2) reads the text literally, and some text comes out
+wrong. While cleaning, find every case below and **propose** a fix, but
+change nothing until the user approves it. On a big book, the cleaning
+helpers collect the cases for their own sections and you merge their lists.
+
+XTTS lowercases everything and only expands a few things itself: plain
+numbers, ordinals (1st, 22nd), money ($500,000), Mr., Mrs., Dr., St.,
+Jr., Capt., Sgt. and the symbols `& @ % # $ £ °`. Everything else is read
+as written.
+
+| Problem | What XTTS does | Proposed fix |
+| --- | --- | --- |
+| Years: "1995" | "one thousand, nine hundred and ninety-five" | nineteen ninety-five |
+| Times: "3:00", "10pm", "7:45" | "three:zero", "tenpm" | three o'clock, ten p.m., seven forty-five |
+| Roman numerals: "Chapter IV", "Henry VIII" | "iv", "viii" as letters or a word | Chapter Four, Henry the Eighth |
+| Acronyms and initialisms: "FBI", "OMG", "NASA" | lowercased, so "fbi" may come out as one word | F.B.I., O.M.G. (keep NASA if it's said as a word) |
+| ALL-CAPS shouting: "STOP" | lowercased, the shout is lost | nothing to fix; just tell the user |
+| Unexpanded abbreviations: Ms., Prof., vs., etc., e.g., approx., km, lbs | read letter by letter or skipped | Miz, Professor, versus, et cetera, for example, kilometers |
+| Mixed letters and digits: "2B", "4x4", "24/7", "50/50" | "twob", "twenty-four/seven" | two B, four by four, twenty-four seven, fifty-fifty |
+| `#` and `@`: "#tagged", "@mia" | "hash tagged", "at mia" | hashtag tagged, or drop the symbol |
+| Emoticons, emoji, "<3", ":)", "lol", "brb" | "<three", noise, or a strange word | heart, or describe it, or LOL |
+| URLs, emails, usernames | read character soup | spell it out or describe it |
+| Stutters: "I-I", "W-what" | mangled or skipped | I... I, W... what |
+| Stretched words: "Yesss", "Nooo", "Mmm", "Ugh", "Hmm", "Haha" | odd noises, sometimes garbled | yes, no, or keep it if the user likes it |
+| Sound effects: "Thwack!", "Bzzz", "Shhh" | unpredictable | keep, cut, or describe |
+| Very short lines, 1–3 words alone ("Yes,", "Mason,") | XTTS garbles tiny inputs; the renderer retries but some slip through | nothing to fix; just count them for the user |
+| Made-up or foreign names and words | guessed, and can change from line to line | a phonetic respelling used everywhere, for example "Aris" → "AIR-iss" |
+| Heteronyms where the context is unclear: read, lead, live, tear, wind, close, bow | the wrong reading | rarely worth fixing; flag only the ones that matter |
+| Non-English phrases inside English text | English pronunciation | leave, translate, or make it its own segment with that `language` |
+| Song lyrics, poems, lists, text messages, letters | flat, no line breaks or pauses | usually fine; flag long ones |
+
+Write the list to `books/<slug>/tts_fixes.md`, grouped by problem:
+
+```
+## Years (3)
+| # | Where | Text | Proposed fix |
+| 1 | u007p0012 | ...left in 1995 and... | 1995 → nineteen ninety-five |
+```
+
+Keep the "Text" column to a few words around the problem. When the same
+fix applies everywhere (every "Prof." → "Professor"), list it once with a
+count.
+
 Then **STOP and tell the user:**
 
 - the path to `book.txt`, and its section, paragraph and word counts;
-- each section you deleted, and what kinds of junk you fixed.
+- each section you deleted, and what kinds of junk you fixed;
+- the quirks you found, with counts per problem, pointing them to
+  `tts_fixes.md`.
+
+The user answers per group or per line: apply, skip, or a different fix.
+Apply exactly what they approve, to `book.txt`, and nothing else. Show
+the new counts and confirm what you changed.
 
 The user edits `book.txt` however they like: cuts a scene, rewrites a
-passage, renames something. **Wait for their go-ahead.** Don't run Step 1,
+passage, renames something. **Wait for their go-ahead.** Applying their
+approved fixes isn't a go-ahead either: after that, wait for their "go". Don't run Step 1,
 read ahead or start the bible until they say go, however long it takes.
 
 ## Step 1: Extract
@@ -120,7 +173,9 @@ python3 plan_tools.py extract books/<slug>/book.txt books/<slug>
 ```
 
 From here on `book.txt` is the book. Don't go back to the EPUB, and don't
-edit `book.txt` yourself. If the user edits it again later, run this step
+edit `book.txt` yourself. If a helper spots another XTTS quirk later,
+add it to `tts_fixes.md` and ask the user about it in Step 7. If they
+approve, edit `book.txt`, re-extract and redo that chapter. If the user edits it again later, run this step
 again. Paragraph IDs can shift in the sections they changed, so redo those
 chapters from Step 4.
 
@@ -592,6 +647,9 @@ the speaker. That includes:
 - runs where counting and content point different ways
 - pronoun tags with two possible people
 - any `reviewed.json` reason that contains a guess
+
+Also ask about any new XTTS quirk a helper found after Step 0 (see
+`tts_fixes.md`), whatever character it involves.
 
 Don't hide doubts to look finished. A line is uncertain if you would bet
 less than ~95% on it.
