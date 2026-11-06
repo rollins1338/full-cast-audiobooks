@@ -11,6 +11,8 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [[ -n "${FULLCAST_PYTHON:-}" && -x "${FULLCAST_PYTHON}" ]]; then
   PYTHON="${FULLCAST_PYTHON}"
+elif [[ -x "$HOME/bots/dramione/.venv/bin/python" ]]; then
+  PYTHON="$HOME/bots/dramione/.venv/bin/python"
 elif [[ -x "$ROOT_DIR/.venv/bin/python" ]]; then
   PYTHON="$ROOT_DIR/.venv/bin/python"
 elif command -v python3.12 >/dev/null 2>&1; then
