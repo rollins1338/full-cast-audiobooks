@@ -130,6 +130,7 @@ as written.
 | Stutters: "I-I", "W-what" | mangled or skipped | I... I, W... what |
 | Stretched words: "Yesss", "Nooo", "Mmm", "Ugh", "Hmm", "Haha" | odd noises, sometimes garbled | yes, no, or keep it if the user likes it |
 | Sound effects: "Thwack!", "Bzzz", "Shhh" | unpredictable | keep, cut, or describe |
+| A name alone at the end of a 1–2 word line: "Mia.", "Damn, Mia." | "Mia dot" | nothing to fix: the renderer ends these on "..." itself |
 | Very short lines, 1–3 words alone ("Yes,", "Mason,") | XTTS garbles tiny inputs; the renderer retries but some slip through | nothing to fix; just count them for the user |
 | Made-up or foreign names and words | guessed, and can change from line to line | a phonetic respelling used everywhere, for example "Aris" → "AIR-iss" |
 | Heteronyms where the context is unclear: read, lead, live, tear, wind, close, bow | the wrong reading | rarely worth fixing; flag only the ones that matter |
@@ -343,6 +344,7 @@ automatically:
   "language": "en",
   "pov_mode": "third_person",
   "announcement": "This is, Book Title. By Author Name. Narrated by <narrator names> with a Full Cast.",
+  "outro": "You were listening to, Book Title. By Author Name.",
   "cast": {
     "Narrator": "<voice file from voices/>",
     "Daniel": "<voice file from voices/>",
@@ -382,8 +384,18 @@ automatically:
   for third person, the POV character for first person and `deep_pov`.
   `narrated_by_changes` switches it from a given paragraph on.
 - **`announce`** is spoken by `Narrator` before the chapter. Use
-  `"announce_by": "<speaker>"` to change who says it. The book
-  `announcement` plays before chapter 1.
+  `"announce_by": "<speaker>"` to change who says it.
+- **`announcement`** plays before chapter 1, and **`outro`** plays after
+  the last line of the book, both read by `Narrator`. Always write both;
+  without an outro the book just stops. If the book has a sequel or is part
+  of a series, add a line about it to the outro (for example "Noah and
+  Mia's story will continue in Empire of Rain!"), and ask the user when you
+  aren't sure of the name. Write the author's name the way it should be
+  spoken: `Silken Starling`, not the handle `Silken_Starling`. Show both
+  lines to the user in the cast review.
+- **The 2-second pauses are automatic.** `build` puts 2 seconds of silence
+  after the `announcement` and before the `outro` in `plan.json`. Don't add
+  them yourself, and don't hand-edit `plan.json` to change them.
 
 ### The cast review
 
@@ -405,7 +417,8 @@ Then **STOP and show the user:**
 - the path to `cast_voices/`;
 - the cast table: character, voice, a one-line description (gender, age,
   role) and roughly how many lines they have;
-- the `main` list.
+- the `main` list;
+- the `announcement` and `outro` lines.
 
 **The user has the final call on every voice.** They listen, then change
 any voice they want. Apply each change to `cast` in `book.json`, run

@@ -120,6 +120,26 @@ def finish(t):
     return t
 
 
+def book_names(plan):
+    """Words the book only ever writes capitalized, even mid-sentence: names like Mia or Collymore."""
+    caps, lower = set(), set()
+    for ch in plan["chapters"]:
+        for seg in ch.get("segments", []):
+            t = tts_text(seg.get("text", ""))
+            caps.update(re.findall(r"(?<=[a-z,;] )([A-Z][a-z'’]+)\b", t))
+            lower.update(re.findall(r"\b([a-z][a-z'’]+)\b", t))
+    return {w for w in caps if w.lower() not in lower}
+
+
+def name_stop(piece, names):
+    """A 1-2 word line ending in a name and a full stop ("Mia.") makes XTTS say "Mia dot".
+    Ending it on an ellipsis instead keeps the name and drops the "dot"."""
+    m = re.search(r"\b([A-Z][\w'’]*)\.$", piece)
+    if m and m.group(1) in names and len(piece.split()) <= 2 and not piece.endswith(".."):
+        return piece + ".."
+    return piece
+
+
 def split_text(text, max_chars):
     if len(text) <= max_chars:
         return [text]
@@ -180,6 +200,7 @@ def load_plan(path, overrides, max_chars, chapter_spec):
     chapters = plan["chapters"]
     wanted = parse_ranges(chapter_spec, len(chapters))
     jobs, segments_total, speaker_voices = [], 0, defaultdict(set)
+    names = book_names(plan)
     for ci, ch in enumerate(chapters, 1):
         run = None
         runs = []
@@ -206,7 +227,7 @@ def load_plan(path, overrides, max_chars, chapter_spec):
             continue
         for ri, r in enumerate(runs):
             speaker, voice, lang, speed = r["sig"]
-            pieces = [finish(p) for p in split_text(" ".join(r["texts"]), max_chars)]
+            pieces = [name_stop(finish(p), names) for p in split_text(" ".join(r["texts"]), max_chars)]
             for pi, piece in enumerate(pieces):
                 last_of_run = pi == len(pieces) - 1
                 next_speaker = runs[ri + 1]["sig"][0] if ri + 1 < len(runs) else None

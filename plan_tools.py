@@ -457,6 +457,9 @@ def cmd_verify(args):
 
 # ---------------------------------------------------------------- build
 
+BOOK_PAUSE = 2.0  # seconds of silence after the opening announcement and before the outro
+
+
 def cmd_build(args):
     book_dir = Path(args.book_dir)
     book, paras = load_book(book_dir), load_units(book_dir)
@@ -472,7 +475,7 @@ def cmd_build(args):
         order = {p: i for i, p in enumerate(pids)}
         out = []
         if n == 0 and book.get("announcement"):
-            out.append(seg("Narrator", book["announcement"], "announce"))
+            out.append({**seg("Narrator", book["announcement"], "announce"), "pause_after": BOOK_PAUSE})
         if ch.get("announce"):
             out.append(seg(ch.get("announce_by", "Narrator"), ch["announce"], "announce"))
         for pid, speaker, text in load_segments(book_dir, ch["id"]):
@@ -491,6 +494,11 @@ def cmd_build(args):
             who = narrated_by(ch, pid, order) if speaker == NARRATION else speaker
             out.append(seg(who, text, "narration" if speaker == NARRATION else "dialogue"))
         chapters.append({"title": ch.get("title", ch["id"]), "segments": out})
+    if book.get("outro") and chapters:
+        last = chapters[-1]["segments"]
+        if last:
+            last[-1]["pause_after"] = BOOK_PAUSE
+        last.append({**seg("Narrator", book["outro"], "announce"), "pause_after": 1.0})
     plan = {"book": book.get("title"), "author": book.get("author"),
             "cast": {k: str(voice_file(v)) for k, v in cast.items()},
             "chapters": chapters}
