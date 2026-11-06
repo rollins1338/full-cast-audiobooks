@@ -4,6 +4,7 @@
     python3 plan_tools.py totext  book.epub books/<slug>     # -> books/<slug>/book.txt to edit
     python3 plan_tools.py extract books/<slug>/book.txt books/<slug>   # numbered paragraphs
                                                              # (a .epub works here too)
+    python3 plan_tools.py castvoices books/<slug>            # copy the chosen voices for review
     python3 plan_tools.py verify  books/<slug> [--chapter 003]
     python3 plan_tools.py build   books/<slug>               # -> books/<slug>/plan.json
     python3 plan_tools.py stats   books/<slug> | plan.json   # who speaks how much
@@ -241,6 +242,33 @@ def load_book(book_dir):
     return json.loads((book_dir / "book.json").read_text(encoding="utf-8"))
 
 
+def cmd_castvoices(args):
+    """Copy every cast voice into books/<slug>/cast_voices/ so the user can listen before approving."""
+    import shutil
+    book_dir = Path(args.book_dir)
+    book = load_book(book_dir)
+    dest = book_dir / "cast_voices"
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir()
+    main = book.get("main", [])
+    lead = ["Narrator"] + [n for n in main if n != "Narrator"]
+    order = [n for n in lead if n in book["cast"]] + [n for n in book["cast"] if n not in lead]
+    missing = []
+    for i, name in enumerate(order, 1):
+        voice = book["cast"][name]
+        src = voice_file(voice)
+        if not src:
+            missing.append(f"{name}: {voice}")
+            continue
+        safe = re.sub(r'[\\/:*?"<>|]', "_", f"{i:02d} {name} - {voice}")
+        shutil.copy2(src, dest / f"{safe}{src.suffix}")
+    print(f"{len(order) - len(missing)} voices -> {dest}")
+    for m in missing:
+        print(f"  MISSING in voices/: {m}")
+    return 1 if missing else 0
+
+
 def load_segments(book_dir, chapter_id):
     f = book_dir / "segments" / f"{chapter_id}.json"
     if not f.is_file():
@@ -371,7 +399,7 @@ def cmd_verify(args):
                     for span in re.findall(r"\*([^*]+)\*", text):
                         if len(span.split()) >= 3 or re.match(r"^[A-Z].*[.?!…]$", span.strip()):
                             warn("THOUGHT_IN_NARRATION", cid, pid, "italics inside the narrator's prose - "
-                                 "a character's inner thought? (rule 7)", text)
+                                 "first-person/direct thought -> thinker, third-person -> stays (rule 7)", text)
                             break
                     # without italics: a third-person narrator never says "I", and a thought tag
                     # left together with the words before it means the thought itself was not split out
@@ -381,7 +409,7 @@ def cmd_verify(args):
                              "a character's thought left in narration? (rule 7)", text)
                     elif THOUGHT_TAG_RE.search(plain) and len(THOUGHT_TAG_RE.split(plain)[0].split()) >= 2:
                         warn("THOUGHT_TAG_IN_NARRATION", cid, pid, "thought tag still attached to the words "
-                             "before it - split the thought out for the thinker? (rule 7)", text)
+                             "before it - split it out unless it's a third-person thought (rule 7)", text)
                 if speaker not in SPECIAL:
                     inner = clean_spoken(text)
                     if re.search(r"[“”\"]", inner):
@@ -527,6 +555,8 @@ def main():
     p.add_argument("--force", action="store_true", help="overwrite an existing book.txt")
     p = sub.add_parser("extract", help="book.txt (or .epub) -> numbered paragraphs")
     p.add_argument("epub", metavar="book.txt|book.epub"); p.add_argument("book_dir")
+    p = sub.add_parser("castvoices", help="copy book.json's cast voices to books/<slug>/cast_voices/")
+    p.add_argument("book_dir")
     p = sub.add_parser("verify"); p.add_argument("book_dir"); p.add_argument("--chapter")
     p = sub.add_parser("stats"); p.add_argument("target", help="books/<slug> or any plan.json")
     p = sub.add_parser("build"); p.add_argument("book_dir")
@@ -534,6 +564,8 @@ def main():
     args = ap.parse_args()
     if args.cmd == "totext":
         return cmd_totext(args)
+    if args.cmd == "castvoices":
+        return cmd_castvoices(args)
     if args.cmd == "verify":
         return cmd_verify(args)
     if args.cmd == "stats":

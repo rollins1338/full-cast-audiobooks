@@ -282,9 +282,9 @@ vocabulary and opinions change with whose chapter it is.
 **Rules:**
 1. **Never carve free indirect thought out sentence by sentence.** Splitting
    every opinionated sentence away from the narrator produces constant
-   mid-paragraph voice switches that sound broken. Rule 7 still applies only
-   to *explicit* direct thoughts: italic ones, tagged ones, or first-person
-   ones.
+   mid-paragraph voice switches that sound broken. Rule 7 still applies:
+   first-person thoughts and direct present-tense ones go to the thinker,
+   and third-person ones stay with the narrator.
 2. **Stop and tell the user in step 3** that the book is deep POV, with 2–3
    short example paragraphs as evidence. Let them choose:
    - **A. POV voices** (recommended for deep POV): each chapter's narration is
@@ -294,8 +294,8 @@ vocabulary and opinions change with whose chapter it is.
      only the announcements and any truly omniscient passages (prologues,
      epilogues, scenes with no POV character).
    - **B. Neutral narrator:** `Narrator` reads all the prose, including the
-     interior voice. Only explicit direct thoughts (rule 7) go to the
-     characters.
+     interior voice. Only first-person and direct thoughts (rule 7) go
+     to the characters.
 3. **Apply the choice consistently** to the whole book. The only exceptions
    are chapters that are genuinely different, such as an omniscient prologue.
    Record the choice and the reason in `bible.md`.
@@ -363,12 +363,10 @@ automatically:
 - **`cast`** maps each speaker to a voice name. The voice name is a file in
   `voices/` without the extension (`ls voices/`). Every speaker you will
   ever use must be a key here, `Narrator` included. Several minor characters
-  may share one voice. **Propose** voices by gender and age, then **stop
-  and show the user the cast table**. Voice choice is the user's call.
-  Continue only after they confirm.
+  may share one voice. **Propose** voices by gender and age. Voice choice
+  is the user's call; see "The cast review" below.
 - **`main`** lists the main characters: the POV characters and the other
-  leads. It's usually 2–4 names. Show it to the user together
-  with the cast table; they confirm it. Step 7 only asks the user about
+  leads. It's usually 2–4 names. The user confirms it in the cast review. Step 7 only asks the user about
   lines involving these characters.
 - **`aliases`** feeds the self-address check in `verify`. Put every name
   others use for that character here.
@@ -386,6 +384,34 @@ automatically:
 - **`announce`** is spoken by `Narrator` before the chapter. Use
   `"announce_by": "<speaker>"` to change who says it. The book
   `announcement` plays before chapter 1.
+
+### The cast review
+
+When `book.json` is written, copy every chosen voice into the book's
+folder so the user can listen to them:
+
+```bash
+python3 plan_tools.py castvoices books/<slug>
+```
+
+This fills `books/<slug>/cast_voices/` with one file per character, named
+`NN <Character> - <Voice>.mp3`: the Narrator first, then the main
+characters, then everyone else. A character who shares a voice gets their
+own copy. If it says `MISSING`, the voice name in `cast` doesn't match a
+file in `voices/`. Fix the name and run it again.
+
+Then **STOP and show the user:**
+
+- the path to `cast_voices/`;
+- the cast table: character, voice, a one-line description (gender, age,
+  role) and roughly how many lines they have;
+- the `main` list.
+
+**The user has the final call on every voice.** They listen, then change
+any voice they want. Apply each change to `cast` in `book.json`, run
+`castvoices` again so the folder matches, and show the new table. Repeat
+until they give the go-ahead. Don't start step 4, or hand any work to a
+helper, until they do.
 
 ## Step 4: Label the chapters (parallel helpers)
 
@@ -479,48 +505,56 @@ Each segment is `[paragraph_id, speaker, text]`.
 6. **New paragraph means new speaker**, unless the previous quote did not
    close (`"…` with no closing mark): then the same speaker continues across
    paragraphs.
-7. **Inner thoughts are spoken by the thinker, never by the narrator.** This
-   matters most in **third-person** books, where the narrator must not voice
-   a character's thoughts.
-   - **Direct thoughts** go to the character who thinks them. Split them out
-     of the narration exactly like dialogue, and leave the tag (`she
-     thought.`) as `NARRATION`. Direct thoughts are:
-     - italic inner voice (`*I can't do this.*`, `*Why is he here?*`)
-     - thoughts written in their own words, usually first person or present
-       tense, with or without quotes (`This is a mistake, Mara thought.`)
-     - silent words addressed to someone (`*Please don't look at me.*`)
-   - **Example:**
-     `Daniel stared at the door. *She's not coming back.* He turned away.`
-     becomes three segments:
-     - `NARRATION`: `Daniel stared at the door.`
-     - `Daniel`: `*She's not coming back.*`
-     - `NARRATION`: `He turned away.`
-   - **What stays `NARRATION`:**
-     - thoughts *reported* in the narrator's own third-person past-tense
-       words (`She wondered whether he'd noticed.`, `He knew it was over.`)
-     - italics that aren't thought: emphasis on one word inside a sentence
-       (`she was *not* going`), titles, foreign words, sounds, sign text
+7. **Inner thoughts: the grammatical person decides who says them.** This
+   matters in **third-person** chapters. Ask one question: **how does the
+   thinker refer to themself inside the thought?**
+   - **First person (`I`, `me`, `my`, `we`) → the thinker says it.** Split
+     it out of the narration like dialogue, and leave the tag (`she
+     thought.`) as `NARRATION`.
+   - **Third person (`she`, `he`, their own name) → the narrator says it.**
+     It's written in the narrator's grammar, so it stays `NARRATION`, even
+     when it's in italics and even with a `she thought` tag.
+   - **No self-reference at all:** judge by the voice.
+     - Present tense, a direct question or exclamation, or the thinker
+       talking to someone or to themself as `you` → the thinker says it.
+     - Past tense in the narrator's style → `NARRATION`.
+   - Italics don't decide it. They only tell you it might be a thought.
+   - **Examples** (Mia is the POV character of a third-person chapter):
+
+     | Text | Segments |
+     | --- | --- |
+     | `*I can't do this.*` | `Mia`: the whole line |
+     | `*She couldn't do this.*` | `NARRATION`: the whole line |
+     | `I should never have come, Mia thought.` | `Mia`: `I should never have come,` / `NARRATION`: `Mia thought.` |
+     | `She should never have come, Mia thought.` | `NARRATION`: one segment |
+     | `Mia stared at the door. *He's not coming back.* She turned away.` | `NARRATION`: `Mia stared at the door.` / `Mia`: `*He's not coming back.*` / `NARRATION`: `She turned away.` |
+     | `*Why is he here?*` | `Mia`: present tense, a direct question |
+     | `Why had he come back?` | `NARRATION`: past tense, the narrator's voice |
+     | `*You idiot, Mia. You absolute idiot.*` | `Mia`: talking to herself |
+     | `*Not again.*` | `Mia`: an exclamation in her own voice |
+     | `*Mia was going to kill him.*` | `NARRATION`: third person, even in italics |
+     | `*God, I hate him. She'd never admit it, though.*` | `Mia`: `*God, I hate him.` / `NARRATION`: `She'd never admit it, though.*` |
+     | `She wondered whether he'd noticed.` | `NARRATION`: reported thought |
+
+     A thought that switches person partway gets split at the switch, as
+     in the last-but-one example. Asterisks don't count in `verify`, so a
+     split can fall inside the italics.
+   - **What else stays `NARRATION`:** italics that aren't thought, like
+     emphasis on one word inside a sentence (`she was *not* going`),
+     titles, foreign words, sounds and sign text.
    - **Telepathy and mind-speech** (common in paranormal books) is dialogue.
      It goes to the sender.
-   - **First person:** the POV character's own thoughts can stay in
-     `NARRATION`, because it's the same voice. Another character's thoughts
-     (shared through telepathy, read in a letter) still go to that
-     character.
-   - **Many books don't use italics for thoughts at all.** Then judge by the
-     words, not the formatting. In a third-person chapter, any `I` / `me` /
-     `my` outside quotes, or present-tense words in a character's own voice
-     before a tag like `she thought` or `he wondered`, is a direct thought
-     and goes to that character:
-     `This was a mistake. I should never have come, Mara thought.` becomes
-     - `Mara`: `This was a mistake. I should never have come,`
-     - `NARRATION`: `Mara thought.`
-
-     Rhetorical questions in third person past tense (`Why did he always
-     do this?` in a Mara scene) are reported thought. They stay
-     `NARRATION`, unless the book clearly treats them as the character's own
-     voice. Unsure? Ask in step 7.
-   - **Unsure whether something is a thought or just emphasis or narration,
-     or whose thought it is?** Ask the user in step 7.
+   - **First-person chapters, and `deep_pov` chapters with POV voices:** the
+     POV character's own thoughts can stay in `NARRATION` whatever their
+     person, because the narration is already in their voice. Another
+     character's first-person thoughts (shared through telepathy, read in
+     a letter) still go to that character.
+   - **Many books don't use italics for thoughts at all.** The same test
+     applies to plain text: in a third-person chapter, `I` / `me` / `my`
+     outside quotes is almost always a first-person thought, so it goes to
+     the thinker.
+   - **Unsure whether something is a thought, whose it is, or which side of
+     the line it falls on?** Ask the user in step 7.
 8. **Texts, letters, notes, signs** are voiced by whoever wrote them. Read
    aloud by someone else? Then by the reader.
 9. **Phone calls, flashbacks, dreams**: the actual speaker, even when absent
@@ -560,13 +594,16 @@ python3 plan_tools.py verify books/<slug> --chapter 001
 - **WARN** means a suspicious label. Each one needs a decision:
   - `QUOTE_IN_NARRATION`: dialogue left inside prose.
   - `THOUGHT_IN_NARRATION`: italic text inside the narrator's prose in a
-    third-person chapter. Usually a character's thought (rule 7). Fine only
-    if it's emphasis, a title, a foreign word or a sound.
+    third-person chapter. Apply rule 7: a first-person or direct thought
+    goes to the thinker. A third-person thought, emphasis, a title, a
+    foreign word or a sound stays, with that reason in `reviewed.json`.
   - `FIRST_PERSON_IN_NARRATION`: the narrator says I/me/my in a
     third-person chapter. Almost always a thought or a letter left in
     narration.
   - `THOUGHT_TAG_IN_NARRATION`: `she thought` / `he wondered` is still
-    joined to the thought before it. Split the thought out for the thinker.
+    joined to the thought before it. Split the thought out for the thinker,
+    unless it's a third-person thought (rule 7). Then it stays, with that
+    reason in `reviewed.json`.
   - `QUOTE_IN_DIALOGUE`: two quotes merged into one segment.
   - `TAG_IN_DIALOGUE`: a tag swallowed into speech.
   - `SELF_ADDRESS`: a speaker calls themselves by name (rule 4).
@@ -610,10 +647,13 @@ Reviewers read whole chapters slowly, so give them a long limit (e.g.
    - quoted dialogue left inside `NARRATION`, especially in third-person
      chapters (rule 10). Check every narration segment that contains a quote
      mark.
-   - inner thoughts left with the narrator in third-person chapters (rule 7).
-     Check every narration segment that contains `*italics*`, `I`/`me`/`my`,
-     or a tag like `she thought` / `he wondered`. Also read for un-tagged,
-     un-italic thoughts that only the meaning gives away.
+   - inner thoughts on the wrong side of rule 7 in third-person chapters:
+     first-person or direct thoughts left with the narrator, and
+     third-person thoughts given to a character. Check every narration
+     segment that contains `*italics*`, `I`/`me`/`my`, or a tag like `she
+     thought` / `he wondered`, and every character segment that is a
+     thought. Also read for un-tagged, un-italic thoughts that only the
+     meaning gives away.
 3. The reviewer **does not edit** segments. It writes
    `books/<slug>/review/<id>.json`, listing only the lines where it
    disagrees:
@@ -671,9 +711,11 @@ just emphasis (rule 7). Use the same format, with
 **Late cast additions are always asked**, main or minor. If
 `late_cast.md` has any entries, put them at the top of `questions.md` under
 `## New characters`, one row each: name, provisional voice, first paragraph
-ID, description and line count. The user confirms or changes each voice, and
-may merge a character into an existing one; apply that in `book.json` and
-`segments/` before step 8.
+ID, description and line count. Add every late addition to `cast` with its
+provisional voice and run `castvoices` first, so the user can listen to
+the new voices in `cast_voices/` too. The user confirms or changes each
+voice, and may merge a character into an existing one; apply that in
+`book.json` and `segments/`, and run `castvoices` again, before step 8.
 
 Write them all to `books/<slug>/questions.md` and show the list to the user
 in chat. Number every question, and show each one like this:
