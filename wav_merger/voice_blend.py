@@ -1,10 +1,10 @@
-"""XTTS cleanup and voice blend for WAV Forge v2.
+"""XTTS cleanup and voice blend, run by render.sh after it writes the chapters.
 
-Rebuilds chapter WAVs from a render folder's per-line chunks (output/<book>/.chunks), cleaning
-each line before it is joined: declick, steady tone per character, cast-wide tone match, level
-match and edge fades. Then per chapter: a shared room (optional), de-hiss / de-ess and a quiet
-room-tone bed instead of digital silence. The original chapter WAVs are never touched; results
-go to <out_dir>/.blend/. Nothing is re-rendered with XTTS except by reroll().
+Each chapter is rebuilt from the render folder's per-line clips (output/<book>/.chunks), cleaning
+every line before it is joined: trimmed ends, steady tone per character, cast-wide tone match above
+300 Hz, level match and edge fades; then de-hiss and de-ess on the chapter. The blended chapter
+replaces output/<book>/NNN.wav; .blend/NNN.json remembers what was done so unchanged chapters are
+skipped next time. Nothing is re-rendered with XTTS except by reroll().
 """
 
 import hashlib
@@ -27,7 +27,7 @@ sys.path.insert(0, str(REPO))
 import render_engine  # noqa: E402
 
 SR = render_engine.SR
-VERSION = 2
+VERSION = 3
 KEYS = ("declick", "steady_tone", "tone_match", "level_match", "edge_fades",
         "room_tone", "shared_room", "dehiss", "deess")
 PRESETS = {"best": {k: k not in ("shared_room", "room_tone") for k in KEYS}, "current": {k: False for k in KEYS}}
@@ -50,42 +50,59 @@ class Cancelled(Exception):
 
 # ------------------------------------------------------------------ render folder
 
-def find_render(paths):
-    """Render info for loaded chapter WAVs, or None when they don't sit in a render folder."""
-    dirs = {Path(p).resolve().parent for p in paths}
-    if len(dirs) != 1:
-        return None
-    out = dirs.pop()
-    if not (out / ".chunks").is_dir():
-        return None
+def info_from_jobs(out_dir, plan, jobs, chapters=None):
+    """Render info from the renderer's jobs: chapters to work on (default all) and every job for
+    measuring the cast."""
+    out = Path(out_dir)
+    jobs = [{"id": j["id"], "speaker": j["speaker"], "gap": j["gap"], "chapter": j["chapter"]} for j in jobs]
+    wanted = set(chapters) if chapters is not None else {j["chapter"] for j in jobs}
+    by_ch = {}
+    for j in jobs:
+        if j["chapter"] in wanted:
+            by_ch.setdefault(j["chapter"], []).append(j)
     try:
         report = json.loads((out / "render_report.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
         report = {}
-    plan = Path(report["plan"]) if report.get("plan") else REPO / "books" / out.name / "plan.json"
-    if not plan.is_file():
+    picked = [j for c in by_ch.values() for j in c]
+    suspects = [{"id": cid, "chapter": s.get("chapter"), "speaker": s.get("speaker", ""), "at": s.get("at", "")}
+                for cid, s in report.get("suspect_chunks", {}).items() if s.get("chapter") in by_ch]
+    return {"out_dir": str(out), "plan": str(plan), "chapters": by_ch, "all": jobs, "lines": len(picked),
+            "voices": len({j["speaker"] for j in picked}),
+            "missing": sum(not (out / ".chunks" / f"{j['id']}.wav").is_file() for j in picked),
+            "suspects": suspects}
+
+
+def find_render(paths):
+    """Render info for chapter WAVs loaded in the merger, or None when they don't sit in a render folder."""
+    dirs = {Path(p).resolve().parent for p in paths}
+    if len(dirs) != 1:
         return None
-    loaded = {int(Path(p).stem) for p in paths if Path(p).stem.isdigit()}
+    out = dirs.pop()
+    plan = REPO / "books" / out.name / "plan.json"
+    if not (out / ".chunks").is_dir() or not plan.is_file():
+        return None
     key = (str(plan), plan.stat().st_mtime_ns)
     with _LOCK:
         jobs = _INFO_CACHE.get(key)
         if jobs is None:
             _, jobs, *_ = render_engine.load_plan(plan, {}, 200, None)
             render_engine.assign_ids(jobs)
-            jobs = [{"id": j["id"], "speaker": j["speaker"], "gap": j["gap"], "chapter": j["chapter"]} for j in jobs]
             _INFO_CACHE[key] = jobs
-    chapters = {}
-    for j in jobs:
-        if j["chapter"] in loaded:
-            chapters.setdefault(j["chapter"], []).append(j)
-    picked = [j for c in chapters.values() for j in c]
-    chunks = out / ".chunks"
-    suspects = [{"id": cid, "chapter": s.get("chapter"), "speaker": s.get("speaker", ""), "at": s.get("at", "")}
-                for cid, s in report.get("suspect_chunks", {}).items() if s.get("chapter") in chapters]
-    return {"out_dir": str(out), "plan": str(plan), "chapters": chapters, "lines": len(picked),
-            "voices": len({j["speaker"] for j in picked}),
-            "missing": sum(not (chunks / f"{j['id']}.wav").is_file() for j in picked),
-            "suspects": suspects}
+    loaded = {int(Path(p).stem) for p in paths if Path(p).stem.isdigit()}
+    info = info_from_jobs(out, plan, jobs, loaded)
+    info["blended"] = sum(is_blended(info, ch) for ch in info["chapters"])
+    return info
+
+
+def is_blended(info, ch):
+    """True when NNN.wav is still the file blend_book wrote (render.sh rewrites it raw when a line changes)."""
+    out = Path(info["out_dir"])
+    try:
+        meta = json.loads((out / ".blend" / f"{ch:03d}.json").read_text())
+        return meta.get("mtime") == (out / f"{ch:03d}.wav").stat().st_mtime_ns
+    except (OSError, ValueError):
+        return False
 
 
 def chunk_path(info, cid):
@@ -119,10 +136,14 @@ def normalized(spec):
 def analyse_voices(info, progress_cb=None):
     """Per-speaker level and long-term spectrum from up to 120 lines each, cached in .blend/voices.json."""
     by_spk = {}
-    for c in info["chapters"].values():
-        for j in c:
+    for j in info["all"]:
+        if chunk_path(info, j["id"]).is_file():
             by_spk.setdefault(j["speaker"], []).append(j["id"])
-    key = hashlib.sha256(json.dumps([VERSION, sorted((s, sorted(set(v))) for s, v in by_spk.items())]).encode()).hexdigest()
+    picks = {}
+    for spk, ids in by_spk.items():
+        ids = list(dict.fromkeys(ids))
+        picks[spk] = list(dict.fromkeys(ids[k] for k in np.linspace(0, len(ids) - 1, min(120, len(ids))).astype(int)))
+    key = hashlib.sha256(json.dumps([VERSION, sorted(picks.items())]).encode()).hexdigest()
     blend = Path(info["out_dir"]) / ".blend"
     blend.mkdir(exist_ok=True)
     cache = blend / "voices.json"
@@ -133,11 +154,9 @@ def analyse_voices(info, progress_cb=None):
     except (OSError, ValueError):
         pass
     speakers = {}
-    for i, (spk, ids) in enumerate(sorted(by_spk.items())):
-        ids = list(dict.fromkeys(ids))
-        pick = [ids[k] for k in np.linspace(0, len(ids) - 1, min(120, len(ids))).astype(int)]
+    for i, (spk, pick) in enumerate(sorted(picks.items())):
         levels, specs, weights = [], [], []
-        for cid in dict.fromkeys(pick):
+        for cid in pick:
             p = chunk_path(info, cid)
             if not p.is_file():
                 continue
@@ -327,43 +346,49 @@ def signature(info, ch, opts, stats):
     return hashlib.sha256(blob.encode()).hexdigest()
 
 
-def blend_book(info, options, dest_dir=None, progress_cb=None, log_cb=None, cancel_event=None):
-    """Blend every loaded chapter into dest_dir/NNN.wav and return the paths in chapter order.
-    Chapters with missing chunks fall back to their original WAV."""
+def blend_book(info, options=None, progress_cb=None, log_cb=None, cancel_event=None):
+    """Blend each chapter in place: output/<book>/NNN.wav is replaced by its blended version.
+    Chapters already blended with the same lines and options are skipped. Returns how many were blended."""
+    options = options or PRESETS["best"]
     log = log_cb or (lambda m, t=None: None)
     prog = progress_cb or (lambda p, l="": None)
-    dest = Path(dest_dir or Path(info["out_dir"]) / ".blend")
-    dest.mkdir(parents=True, exist_ok=True)
-    prog(0, "Voice blend · measuring the cast")
-    stats = analyse_voices(info, lambda f: prog(5 * f, "Voice blend · measuring the cast"))
+    out_dir = Path(info["out_dir"])
+    meta_dir = out_dir / ".blend"
+    meta_dir.mkdir(exist_ok=True)
+    prog(0, "measuring the cast")
+    stats = analyse_voices(info, lambda f: prog(5 * f, "measuring the cast"))
     chapters = sorted(info["chapters"])
-    results, done = {}, [0]
+    done, made = [0], [0]
     lock = threading.Lock()
 
     def one(ch):
-        out = dest / f"{ch:03d}.wav"
-        meta = dest / f"{ch:03d}.json"
+        out = out_dir / f"{ch:03d}.wav"
+        meta = meta_dir / f"{ch:03d}.json"
         jobs = info["chapters"][ch]
+        if not out.is_file():
+            return False
         if any(not chunk_path(info, j["id"]).is_file() for j in jobs):
-            log(f"Chapter {ch}: some line clips are missing, using the original chapter file.", "warning")
-            return str(Path(info["out_dir"]) / f"{ch:03d}.wav")
+            log(f"Chapter {ch}: some line clips are missing, left as rendered.", "warning")
+            return False
         sig = signature(info, ch, options, stats)
         try:
-            if json.loads(meta.read_text()).get("sig") == sig and out.is_file():
-                return str(out)
+            old = json.loads(meta.read_text())
+            if old.get("sig") == sig and old.get("mtime") == out.stat().st_mtime_ns:
+                return False
         except (OSError, ValueError):
             pass
-        audio = finish_chapter(assemble_lines(info, jobs, options, stats, cancel_event), options, dest)
+        audio = finish_chapter(assemble_lines(info, jobs, options, stats, cancel_event), options, meta_dir)
         render_engine.write_wav_atomic(out, audio)
-        meta.write_text(json.dumps({"sig": sig, "seconds": round(len(audio) / SR, 2)}))
-        return str(out)
+        meta.write_text(json.dumps({"sig": sig, "mtime": out.stat().st_mtime_ns, "seconds": round(len(audio) / SR, 2)}))
+        return True
 
     def run(ch):
-        path = one(ch)
+        blended = one(ch)
         with lock:
-            results[ch] = path
             done[0] += 1
-            prog(5 + 95 * done[0] / len(chapters), f"Voice blend · chapter {done[0]} of {len(chapters)}")
+            made[0] += blended
+            prog(5 + 95 * done[0] / len(chapters), f"chapter {ch} {'blended' if blended else 'already blended'}"
+                 f" ({done[0]} of {len(chapters)})")
 
     workers = max(1, min(4, (os.cpu_count() or 2) // 2))
     with ThreadPoolExecutor(workers) as pool:
@@ -374,76 +399,14 @@ def blend_book(info, options, dest_dir=None, progress_cb=None, log_cb=None, canc
         except Cancelled:
             for f in futures:
                 f.cancel()
-            log("Voice blend cancelled.", "warning")
-            return None
-    log(f"Voice blend done: {len(chapters)} chapters.", "success")
-    return [results[ch] for ch in chapters]
+            raise
+    return made[0]
 
 
-# ------------------------------------------------------------------ preview and re-roll
-
-def line_starts(info, ch):
-    pos, out = render_engine.CHAPTER_LEAD, []
-    jobs = info["chapters"][ch]
-    for j in jobs:
-        out.append(pos)
-        pos += sf.info(str(chunk_path(info, j["id"]))).frames / SR + (j["gap"] if j is not jobs[-1] else render_engine.CHAPTER_TAIL)
-    return out
-
-
-def busiest_start(info, ch, seconds):
-    """Start time of the window with the most speaker changes: the best place to hear the blend."""
-    jobs, starts = info["chapters"][ch], line_starts(info, ch)
-    best, best_i = -1, 0
-    for i in range(len(jobs)):
-        k, changes = i, 0
-        while k + 1 < len(jobs) and starts[k + 1] < starts[i] + seconds:
-            changes += jobs[k + 1]["speaker"] != jobs[k]["speaker"]
-            k += 1
-        if changes > best:
-            best, best_i = changes, i
-    return best_i, starts
-
-
-def match_loudness(x, db=-20.0):
-    x = x * 10 ** ((db - gated_db(x)) / 20)
-    peak = float(np.abs(x).max()) or 1
-    return (x * min(1, 0.95 / peak)).astype(np.float32)
-
-
-def preview(info, options, chapter, start_s=None, seconds=30):
-    """Write the same window of the original chapter and of its blend, loudness-matched so the
-    comparison is about sound, not volume. start_s None picks the busiest multi-voice window."""
-    stats = analyse_voices(info)
-    jobs = info["chapters"][chapter]
-    if start_s is None:
-        i, starts = busiest_start(info, chapter, seconds)
-    else:
-        starts = line_starts(info, chapter)
-        i = max([k for k, s in enumerate(starts) if s <= start_s] or [0])
-    k = i
-    while k + 1 < len(jobs) and starts[k + 1] < starts[i] + seconds + 2:
-        k += 1
-    t0 = starts[i]
-    before, _ = sf.read(str(Path(info["out_dir"]) / f"{chapter:03d}.wav"), dtype="float32",
-                        start=int(t0 * SR), frames=int(seconds * SR), always_2d=False)
-    if before.ndim > 1:
-        before = before.mean(axis=1)
-    blend = Path(info["out_dir"]) / ".blend"
-    blend.mkdir(exist_ok=True)
-    after = finish_chapter(assemble_lines(info, jobs[i:k + 1], options, stats, lead=False), options, blend)
-    after = after[: int(seconds * SR)]
-    for old in blend.glob("preview_*.wav"):
-        old.unlink()
-    tag = hashlib.sha256(json.dumps([chapter, t0, sorted(k for k in KEYS if options.get(k))]).encode()).hexdigest()[:8]
-    paths = (blend / f"preview_{tag}_before.wav", blend / f"preview_{tag}_after.wav")
-    for p, x in zip(paths, (before, after)):
-        render_engine.write_wav_atomic(p, match_loudness(x))
-    return str(paths[0]), str(paths[1])
-
+# ------------------------------------------------------------------ re-roll
 
 def reroll(info, chunk_id):
-    """Delete one line's clip and let render.sh render it again (and rebuild its chapter)."""
+    """Delete one line's clip and let render.sh render it again (it rebuilds and re-blends the chapter)."""
     ch = next((c for c, jobs in info["chapters"].items() if any(j["id"] == chunk_id for j in jobs)), None)
     if ch is None:
         return 1

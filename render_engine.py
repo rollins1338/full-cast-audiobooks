@@ -842,6 +842,12 @@ def render(args, plan, jobs, out_dir, wanted, cache_root=None):
                       f"({100 * dash.done_chars / dash.total_chars:.1f}%). Run the same command to resume.")
         return 130
     write_manifest(out_dir, plan, report, ext)
+    if ext == "wav" and not args.no_blend:
+        try:
+            blend_chapters(args, out_dir)
+        except KeyboardInterrupt:
+            console.print("[yellow]Voice blend stopped. Run the same command to finish it.")
+            return 130
     total_audio = sum(c["seconds"] for c in report["chapters"].values())
     console.rule("[bold green]Done")
     console.print(f"Rendered {dash.new_chunks:,} new chunks in {fmt_dur(elapsed)} "
@@ -854,6 +860,28 @@ def render(args, plan, jobs, out_dir, wanted, cache_root=None):
             console.print(f"  {s.get('at', 'ch' + str(s['chapter']))}  {s['speaker']}: {s['text'][:90]}")
         console.print(f"[dim]  full list: {report_path}. To re-roll one, delete .chunks/<id>.wav and re-run.")
     return 0
+
+
+def blend_chapters(args, out_dir):
+    """XTTS cleanup and voice blend (wav_merger/voice_blend.py) on every chapter of the book.
+    Measured across the whole cast, so it covers all chapters, not only --chapters; unchanged
+    ones are skipped."""
+    sys.path.insert(0, str(ROOT / "wav_merger"))
+    import voice_blend
+    _, all_jobs, *_ = load_plan(args.plan, args.overrides, args.max_chars, None)
+    assign_ids(all_jobs)
+    have = [ci for ci in sorted({j["chapter"] for j in all_jobs}) if (out_dir / f"{ci:03d}.wav").is_file()]
+    info = voice_blend.info_from_jobs(out_dir, Path(args.plan).resolve(), all_jobs, have)
+    console.rule("[bold]Voice blend")
+    t0 = time.monotonic()
+
+    def progress(pct, label):
+        if "already" not in label and label.startswith("chapter"):
+            console.print(f"[dim][{pct:5.1f}%][/] {label}")
+    made = voice_blend.blend_book(info, progress_cb=progress,
+                                  log_cb=lambda m, t=None: console.print(f"[yellow]{m}" if t == "warning" else m))
+    console.print(f"Voice blend: {made} chapter(s) blended, {len(have) - made} already done "
+                  f"({fmt_dur(time.monotonic() - t0)}). Skip it with --no-blend.")
 
 
 def write_manifest(out_dir, plan, report, ext):
@@ -902,6 +930,7 @@ def main():
     ap.add_argument("--max-chars", type=int, default=200)
     ap.add_argument("--retries", type=int, default=2, help="re-rolls for implausible-length chunks")
     ap.add_argument("--plain", action="store_true", help="line-by-line output instead of the dashboard")
+    ap.add_argument("--no-blend", action="store_true", help="leave chapters raw: no XTTS cleanup / voice blend")
     args = ap.parse_args()
 
     overrides = {}
@@ -911,6 +940,7 @@ def main():
             console.print(f"[red]--voice: no file for {voice!r} in voices/")
             return 2
         overrides[speaker.strip()] = voice.strip()
+    args.overrides = overrides
     try:
         plan, jobs, segs, speaker_voices, wanted = load_plan(args.plan, overrides, args.max_chars, args.chapters)
     except (PlanError, json.JSONDecodeError, OSError) as e:

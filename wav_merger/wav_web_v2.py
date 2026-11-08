@@ -1,5 +1,6 @@
-"""WAV Forge v2: the v1 merger (wav_web.py + wav_merge_engine.py, unchanged) with a new UI
-and an XTTS cleanup / voice blend stage (voice_blend.py) that runs before the merge."""
+"""WAV Forge v2: the v1 merger (wav_web.py + wav_merge_engine.py, unchanged) with a new UI.
+Voice blend now happens in render.sh, so chapters arrive here already blended; this shows whether
+they are, and offers listen / re-roll for lines the renderer flagged."""
 
 import json
 import os
@@ -10,16 +11,12 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import wav_web as v1
-from wav_web import LOCK, STATE, add_log, set_status, snapshot, json_response
-from wav_merge_engine import get_wav_info, secs_to_hms
+from wav_web import LOCK, STATE, add_log, snapshot, json_response
 
 import voice_blend
 
 PORT = 8776
-BLEND_KEYS = ("level_match", "declick", "dehiss", "deess", "tone_match", "steady_tone",
-              "room_tone", "edge_fades", "shared_room")
-
-STATE.update({"blend_progress": 0, "blend_label": "", "stage": "", "reroll": "", "preview": None})
+STATE.update({"reroll": ""})
 RENDER = {"key": None, "info": None, "titles": {}, "book": ""}
 
 
@@ -56,8 +53,7 @@ def snapshot_v2():
     info = render_info()
     with LOCK:
         first = STATE["files"][0] if STATE["files"] else None
-        snap.update(blendProgress=STATE["blend_progress"], blendLabel=STATE["blend_label"],
-                    stage=STATE["stage"], reroll=STATE["reroll"], preview=STATE["preview"])
+        snap["reroll"] = STATE["reroll"]
     for f in snap["files"]:
         n = chapter_no(f["path"])
         f["title"] = RENDER["titles"].get(n, "") if n else ""
@@ -66,20 +62,16 @@ def snapshot_v2():
     snap["book"] = (RENDER["book"] or Path(info["out_dir"]).name) if info else ""
     snap["render"] = None if not info else {
         "outDir": info["out_dir"], "lines": info["lines"], "voices": info["voices"],
-        "missing": info["missing"], "suspects": info["suspects"]}
-    snap["presets"] = voice_blend.PRESETS
+        "missing": info["missing"], "suspects": info["suspects"],
+        "blended": info["blended"], "chapters": len(info["chapters"])}
     return snap
 
 
 def audio_allowed(path):
-    """Only stream loaded chapter files and files inside a render folder's .blend preview dir."""
-    real = os.path.realpath(path)
+    """Only stream the loaded chapter files."""
     with LOCK:
         loaded = {os.path.realpath(f["path"]) for f in STATE["files"]}
-    if real in loaded:
-        return True
-    info = RENDER["info"]
-    return bool(info) and real.startswith(os.path.realpath(os.path.join(info["out_dir"], ".blend")) + os.sep)
+    return os.path.realpath(path) in loaded
 
 
 class Handler(v1.Handler):
@@ -142,11 +134,9 @@ class Handler(v1.Handler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        if parsed.path in ("/api/preview", "/api/reroll"):
+        if parsed.path == "/api/reroll":
             try:
-                payload = v1.read_json(self)
-                handler = self.preview if parsed.path == "/api/preview" else self.reroll
-                json_response(self, handler(payload))
+                json_response(self, self.reroll(v1.read_json(self)))
             except Exception as exc:
                 json_response(self, {"ok": False, "error": str(exc)}, 500)
             return
@@ -156,37 +146,6 @@ class Handler(v1.Handler):
         result = super().action(payload)
         result["state"] = snapshot_v2()
         return result
-
-    def blend_options(self, payload):
-        return {k: bool((payload.get("blend") or {}).get(k)) for k in BLEND_KEYS}
-
-    def preview(self, payload):
-        info = render_info()
-        if not info:
-            return {"ok": False, "error": "Preview needs a render folder (the renderer's .chunks)."}
-        chapter = int(payload.get("chapter") or 0)
-        if chapter not in info["chapters"]:
-            # no chapter picked: the one with the most voice changes per line shows the blend best
-            chapter = max(info["chapters"], key=lambda c: sum(
-                a["speaker"] != b["speaker"] for a, b in zip(info["chapters"][c], info["chapters"][c][1:]))
-                / max(len(info["chapters"][c]), 1))
-        start = payload.get("start")
-        start = None if start is None else float(start)
-        with LOCK:
-            STATE["preview"] = {"state": "working", "chapter": chapter}
-        options = self.blend_options(payload)
-
-        def work():
-            try:
-                before, after = voice_blend.preview(info, options, chapter, start, 30)
-                result = {"state": "ready", "chapter": chapter, "before": before, "after": after}
-            except Exception as exc:
-                result = {"state": "error", "error": str(exc)}
-                add_log(f"Preview failed: {exc}", "error")
-            with LOCK:
-                STATE["preview"] = result
-        threading.Thread(target=work, daemon=True).start()
-        return {"ok": True, "state": snapshot_v2()}
 
     def reroll(self, payload):
         info = render_info()
@@ -202,7 +161,7 @@ class Handler(v1.Handler):
             add_log("Re-rolling 1 line with the renderer…", "muted")
             try:
                 code = voice_blend.reroll(info, chunk)
-                add_log("Re-roll done. Listen again." if code == 0 else f"Re-roll failed (exit {code}).",
+                add_log("Re-roll done (chapter re-rendered and re-blended). Listen again." if code == 0 else f"Re-roll failed (exit {code}).",
                         "success" if code == 0 else "error")
             except Exception as exc:
                 add_log(f"Re-roll failed: {exc}", "error")
@@ -213,64 +172,10 @@ class Handler(v1.Handler):
         return {"ok": True, "state": snapshot_v2()}
 
     def start(self, payload):
-        self._blend = self.blend_options(payload)
-        with LOCK:
-            STATE["blend_progress"] = 0
-            STATE["blend_label"] = ""
-            STATE["stage"] = ""
         result = super().start(payload)
         if result.get("ok"):
             result["state"] = snapshot_v2()
         return result
-
-    def run_merge(self, files, output, options, do_m4b, bitrate, cancel):
-        blend = getattr(self, "_blend", {})
-        info = render_info() if any(blend.values()) else None
-        if any(blend.values()) and not info:
-            add_log("No render folder found: merging the chapter files without voice blend.", "warning")
-        if info:
-            with LOCK:
-                STATE["stage"] = "blend"
-            set_status("Voice blend…")
-
-            def progress(pct, label=""):
-                with LOCK:
-                    STATE["blend_progress"] = pct
-                    STATE["blend_label"] = label
-                if label:
-                    set_status(label)
-            try:
-                blended = voice_blend.blend_book(info, blend, progress_cb=progress,
-                                                 log_cb=lambda m, t=None: add_log(m, t), cancel_event=cancel)
-            except Exception as exc:
-                add_log(f"Voice blend failed: {exc}", "error")
-                blended = None
-            if cancel.is_set() or not blended:
-                with LOCK:
-                    STATE["running"] = False
-                    STATE["cancel"] = None
-                    STATE["exit_code"] = 1
-                    STATE["status"] = "Cancelled" if cancel.is_set() else "Error"
-                    STATE["stage"] = ""
-                return
-            by_chapter = {chapter_no(p): p for p in blended}
-            swapped = []
-            for f in files:
-                n = chapter_no(f["path"])
-                if n in by_chapter:
-                    new = get_wav_info(by_chapter[n])
-                    new["name"] = f["name"]
-                    swapped.append(new)
-                else:
-                    swapped.append(f)
-            files = swapped
-            with LOCK:
-                STATE["blend_progress"] = 100
-        with LOCK:
-            STATE["stage"] = "master"
-        super().run_merge(files, output, options, do_m4b, bitrate, cancel)
-        with LOCK:
-            STATE["stage"] = ""
 
 
 HTML = r"""<!doctype html>
@@ -298,7 +203,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;padding:20p
 .stat{padding:14px 16px;border-right:1px solid var(--line);min-width:0}.stat:last-child{border:0}
 .stat span{display:block;color:var(--muted);font-size:11.5px;margin-bottom:2px}.stat b{font-size:18px;font-weight:500;letter-spacing:-.01em;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .src{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);font-size:12.5px;flex-wrap:wrap}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--acc);flex:none}.dot.off{background:var(--dim)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--acc);flex:none}.dot.warnd{background:var(--amber)}.dot.off{background:var(--dim)}
 .warn{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--amber)}
 .pill{font-size:11px;height:22px;padding:0 8px;border-radius:4px;background:var(--panel2);color:var(--muted);border:1px solid var(--line);cursor:pointer;display:inline-flex;align-items:center}
 .pill:hover{color:var(--text)}.warn .pill{color:var(--amber);border-color:rgba(245,184,92,.35);background:rgba(245,184,92,.08)}
@@ -376,23 +281,6 @@ details summary::before{content:"›";display:inline-block;margin-right:6px;tran
   </section>
   <aside class="side">
     <section class="card">
-      <div class="sec"><h3>Quality</h3>
-        <div class="seg wide" id="preset"><button data-p="best">Best quality</button><button data-p="current">Current</button><button data-p="custom">Custom</button></div>
-        <p class="note" id="presetNote"></p>
-      </div>
-      <div class="sec"><h3>XTTS cleanup <span class="cnt">per line</span></h3>
-        <div class="field"><div><label for="level_match">Level-match lines</label><small>Even out loud and quiet takes</small></div><input type="checkbox" class="tog bl" id="level_match"></div>
-        <div class="field"><div><label for="declick">Trim line ends</label><small>DC offset and dead air at line ends</small></div><input type="checkbox" class="tog bl" id="declick"></div>
-        <div class="field"><div><label for="dehiss">De-hiss</label><small>Light cut of the metallic hiss</small></div><input type="checkbox" class="tog bl" id="dehiss"></div>
-        <div class="field"><div><label for="deess">De-ess</label><small>Soften harsh s sounds</small></div><input type="checkbox" class="tog bl" id="deess"></div>
-      </div>
-      <div class="sec"><h3>Voice blend <span class="cnt">per line</span></h3>
-        <div class="field"><div><label for="tone_match">Match voice tone</label><small>Same-mic EQ across the cast</small></div><input type="checkbox" class="tog bl" id="tone_match"></div>
-        <div class="field"><div><label for="steady_tone">Steady character tone</label><small>Each voice sounds the same every line</small></div><input type="checkbox" class="tog bl" id="steady_tone"></div>
-        <div class="field"><div><label for="room_tone">Room tone</label><small>Soft bed instead of dead silence</small></div><input type="checkbox" class="tog bl" id="room_tone"></div>
-        <div class="field"><div><label for="edge_fades">Edge fades</label><small>15 ms in and out on every line</small></div><input type="checkbox" class="tog bl" id="edge_fades"></div>
-        <div class="field"><div><label for="shared_room">Shared room</label><small>A touch of the same space</small></div><input type="checkbox" class="tog bl" id="shared_room"></div>
-      </div>
       <div class="sec"><h3>Master <span class="cnt">current chain</span></h3>
         <div class="field"><div><label for="acx">ACX master</label><small>High-pass, 4:1 compressor, two-pass loudness</small></div><input type="checkbox" class="tog" id="acx" checked></div>
         <div class="kv"><span>Loudness</span><b class="mono" id="kvLoud">−20 LUFS · −3 dB peak</b></div>
@@ -423,12 +311,7 @@ details summary::before{content:"›";display:inline-block;margin-right:6px;tran
       <div class="row2"><span id="stageText">Ready</span><span class="mono" id="pct">0%</span></div>
       <div class="prog"><div id="bar"></div></div>
       <div class="row2" style="margin-bottom:14px"><span id="nextText">&nbsp;</span><span class="mono" id="detail"></span></div>
-      <div style="display:flex;gap:8px"><button class="btn" id="previewBtn">Preview 30s</button><button class="btn danger" id="stopBtn" hidden>Stop</button><button class="btn pri big" id="mergeBtn">Merge</button></div>
-      <div class="ab" id="ab" hidden>
-        <div class="seg"><button id="abBefore">Before</button><button id="abAfter" class="on">After</button></div>
-        <span class="sub" id="abNote"></span><div class="sp"></div>
-        <button class="btn icon" id="abPlay" title="Play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
-      </div>
+      <div style="display:flex;gap:8px"><button class="btn danger" id="stopBtn" hidden>Stop</button><button class="btn pri big" id="mergeBtn">Merge</button></div>
     </div></section>
     <section class="card"><details id="logBox"><summary style="padding:12px 16px">Activity</summary><div class="log" id="log"></div></details></section>
   </aside>
@@ -437,11 +320,7 @@ details summary::before{content:"›";display:inline-block;margin-right:6px;tran
 <div class="toast" id="toast"></div>
 <script>
 const $ = id => document.getElementById(id);
-const BL = ["level_match","declick","dehiss","deess","tone_match","steady_tone","room_tone","edge_fades","shared_room"];
-const NOTES = {best:"Everything on except Room tone and Shared room. Built on the current master, with XTTS cleanup and voice blend before it.",
-  current:"Exactly the v1 merger: no per-line processing, same master chain.",
-  custom:"Your own mix of the options below."};
-let S = null, selected = new Set(), logCursor = 0, preset = "best", presets = null, playing = null, abSide = "after", lastPreview = null;
+let S = null, selected = new Set(), logCursor = 0, playing = null;
 const store = {get(k,d){try{const v=localStorage.getItem("wf2."+k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("wf2."+k,JSON.stringify(v))}catch(e){}}};
 
 function toast(m){$("toast").textContent=m;$("toast").classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>$("toast").classList.remove("show"),2200)}
@@ -450,58 +329,40 @@ async function api(path, body){const r=await fetch(path,{method:body?"POST":"GET
 function segVal(id){const b=$(id).querySelector("button.on");return b?b.dataset.v:null}
 function setSeg(id,v){$(id).querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v==String(v)))}
 
-function blendOpts(){const o={};BL.forEach(k=>o[k]=$(k).checked);return o}
-function applyPreset(p){
-  preset=p;store.set("preset",p);
-  $("preset").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.p===p));
-  $("presetNote").textContent=NOTES[p];
-  if(p!=="custom"&&presets&&presets[p])BL.forEach(k=>$(k).checked=!!presets[p][k]);
-  if(p==="custom")BL.forEach(k=>$(k).checked=!!store.get("custom",{})[k]);
-  if(p!=="custom")$("acx").checked=true;
-  updateAvail();
-}
-function updateAvail(){const has=!!(S&&S.render);BL.forEach(k=>$(k).disabled=!has);$("previewBtn").disabled=!has||(S&&S.running)}
-
 function config(){return{output:$("output").value,sampleRate:Number($("sampleRate").value),channels:Number(segVal("channels")||2),
   bitDepth:Number($("bitDepth").value),speed:Number($("speed").value||1),gain:Number($("gain").value||0),autoConvert:$("autoConvert").checked,
   acx:$("acx").checked,m4b:$("m4b").checked,bitrate:Number(segVal("bitrate")||96),normalizeMaster:$("normalizeMaster").checked,
   trimSilence:$("trimSilence").checked,trimThreshold:Number($("trimThreshold").value||-55),headroom:Number($("headroom").value||-1),
   fadeInMs:$("fadeIn").checked?Number($("fadeInMs").value||1000):0,fadeOutMs:$("fadeOut").checked?Number($("fadeOutMs").value||1000):0,
-  gapMs:$("gap").checked?Number($("gapMs").value||500):0,crossfadeMs:$("crossfade").checked?Number($("crossfadeMs").value||500):0,
-  blend:S&&S.render?blendOpts():{}}}
+  gapMs:$("gap").checked?Number($("gapMs").value||500):0,crossfadeMs:$("crossfade").checked?Number($("crossfadeMs").value||500):0}}
 
 function fmtT(sec){sec=Math.round(sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return(h?h+":"+String(m).padStart(2,"0"):m)+":"+String(s).padStart(2,"0")}
 
 function render(st){
-  S=st;if(!presets&&st.presets){presets=st.presets;applyPreset(preset)}
+  S=st;
   $("crumb").innerHTML=st.book?`/ <b>${esc(st.book)}</b>`:"";
   $("mCount").textContent=st.count;$("mDuration").textContent=st.duration;$("mSize").textContent=st.size;$("mFormat").textContent=st.format;
   if(st.book&&!st.running&&(!st.outputLabel||st.outputLabel==="merged_output")&&!render.named){render.named=1;action("set_output_name",{value:st.book})}
   if(document.activeElement!==$("output"))$("output").value=st.outputLabel||"";
   const r=st.render;
   if(r){const sus=r.suspects||[];
-    $("src").innerHTML=`<span class="dot"></span><span>Render folder found <span class="mono" style="color:var(--muted)">${esc(r.outDir.split("/").slice(-2).join("/"))} · ${r.lines.toLocaleString()} lines · ${r.voices} voices${r.missing?` · ${r.missing} missing`:""}</span></span>`+
+    const all=r.blended===r.chapters;
+    $("src").innerHTML=`<span class="dot${all?"":" warnd"}"></span><span>${all?"Voice-blended by render.sh":r.blended?`Voice-blended: ${r.blended} of ${r.chapters} chapters`:"Not voice-blended"} <span class="mono" style="color:var(--muted)">${esc(r.outDir.split("/").slice(-2).join("/"))} · ${r.lines.toLocaleString()} lines · ${r.voices} voices${r.missing?` · ${r.missing} missing`:""}</span>${all?"":` <span class="sub">Run render.sh on the plan again to blend the rest.</span>`}</span>`+
       (sus.length?`<span class="warn">${sus.length} line${sus.length>1?"s":""} flagged as possibly garbled${sus.map(s=>` <span class="mono">${esc(s.speaker)} · ch ${s.chapter}${s.at?" · "+esc(String(s.at).split(" ").pop()):""}</span><span class="pill" data-listen="${esc(s.at||"")}" data-ch="${s.chapter}">Listen</span><span class="pill" data-reroll="${esc(s.id)}">${st.reroll===s.id?"Re-rolling…":"Re-roll"}</span>`).join("")}</span>`:"");
   }else $("src").innerHTML=st.count?`<span class="dot off"></span><span class="sub">No render folder next to these files. They'll merge with the current master only.</span>`:`<span class="dot off"></span><span class="sub">Open a book's output folder to start.</span>`;
   const files=st.files,total=files.reduce((a,f)=>a+f.seconds,0)||1;
   $("tl").innerHTML=files.map(f=>`<i data-i="${f.index}" title="${esc(f.name)} · ${esc(f.duration)}" class="${selected.has(f.index)?"sel":""}" style="flex:${Math.max(f.seconds/total*1000,4)}"></i>`).join("");
   $("tl").hidden=!files.length;$("drop").hidden=!!files.length;
   $("rows").innerHTML=files.map(f=>`<tr data-i="${f.index}" class="${selected.has(f.index)?"sel":""}${playing===f.path?" playing":""}"><td class="num mono">${String(f.index+1).padStart(2,"0")}</td><td class="mono">${esc(f.name)}</td><td class="title" title="${esc(f.title||"")}">${esc(f.title||"")}</td><td class="r mono">${esc(f.duration)}</td><td class="r mono" style="color:var(--muted)">${esc(f.sizeText)}</td><td class="r act"><span class="pill" data-play="${esc(f.path)}">${playing===f.path?"Stop":"Play"}</span></td></tr>`).join("");
-  const run=st.running,stage=st.stage;
+  const run=st.running;
   let pct=0,label=st.status||"Ready",next="";
-  if(run&&stage==="blend"){pct=st.blendProgress;label=st.blendLabel||"Voice blend";next="Then master"+(config().m4b?", then M4B":"")}
-  else if(run){const m4b=st.m4bProgress>0||/m4b/i.test(st.status||"");pct=m4b?st.m4bProgress:st.progress;next=m4b?"M4B export":(config().m4b?"Then M4B":"")}
+  if(run){const m4b=st.m4bProgress>0||/m4b/i.test(st.status||"");pct=m4b?st.m4bProgress:st.progress;next=m4b?"M4B export":(config().m4b?"Then M4B":"")}
   else if(st.exitCode===0)pct=100;
   $("stageText").textContent=label;$("pct").textContent=Math.round(pct)+"%";$("bar").style.width=pct+"%";$("nextText").innerHTML=next||"&nbsp;";
   $("detail").textContent=run?(st.m4bDetail||st.progressDetail||""):"";
   $("mergeBtn").textContent=run?"Working…":`Merge ${st.count||""} chapter${st.count===1?"":"s"}`;$("mergeBtn").disabled=run||st.count<2;
-  $("stopBtn").hidden=!run;updateAvail();
-  const pv=st.preview;
-  if(pv&&pv.state==="working"){$("previewBtn").textContent="Rendering preview…";$("previewBtn").disabled=true}
-  else{$("previewBtn").textContent="Preview 30s"}
-  if(pv&&pv.state==="ready"&&lastPreview!==pv.after){lastPreview=pv.after;$("ab").hidden=false;$("abNote").textContent=`Chapter ${pv.chapter} · 30 s`;setAB("after");play(pv.after,true)}
+  $("stopBtn").hidden=!run;
 }
-function setAB(side){abSide=side;$("abBefore").classList.toggle("on",side==="before");$("abAfter").classList.toggle("on",side==="after")}
 function play(path,keepTime){const p=$("player");const t=keepTime&&!p.paused?p.currentTime:0;p.src="/audio?path="+encodeURIComponent(path);p.currentTime=t;p.play().catch(()=>{});playing=path;if(S)render(S)}
 function stopPlay(){$("player").pause();playing=null;if(S)render(S)}
 $("player").onended=()=>{playing=null;if(S)render(S)};
@@ -521,13 +382,6 @@ function wire(){
   $("stopBtn").onclick=()=>action("stop");
   $("output").addEventListener("change",()=>action("set_output_name",{value:$("output").value}));
   $("mergeBtn").onclick=async()=>{try{const d=await api("/api/start",config());logCursor=d.cursor;$("log").innerHTML="";render(d.state)}catch(e){toast(e.message)}};
-  $("previewBtn").onclick=async()=>{const sel=[...selected][0];const f=S&&S.files.find(x=>x.index===sel);const ch=f?parseInt(f.name,10):0;
-    try{render((await api("/api/preview",{chapter:ch||0,start:null,blend:blendOpts()})).state)}catch(e){toast(e.message)}};
-  $("abBefore").onclick=()=>{setAB("before");if(S&&S.preview&&S.preview.before)play(S.preview.before,true)};
-  $("abAfter").onclick=()=>{setAB("after");if(S&&S.preview&&S.preview.after)play(S.preview.after,true)};
-  $("abPlay").onclick=()=>{const pv=S&&S.preview;if(!pv||pv.state!=="ready")return;if(!$("player").paused){$("player").pause();return}play(abSide==="after"?pv.after:pv.before,true)};
-  $("preset").onclick=e=>{const b=e.target.closest("button");if(b)applyPreset(b.dataset.p)};
-  BL.forEach(k=>$(k).onchange=()=>{const c=blendOpts();store.set("custom",c);if(preset!=="custom"){preset="custom";store.set("preset","custom");$("preset").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.p==="custom"));$("presetNote").textContent=NOTES.custom}});
   ["channels","bitrate"].forEach(id=>$(id).onclick=e=>{const b=e.target.closest("button");if(b){setSeg(id,b.dataset.v);store.set(id,b.dataset.v)}});
   $("acx").onchange=()=>$("kvLoud").textContent=$("acx").checked?"−20 LUFS · −3 dB peak":"−23 LUFS · −1.5 dB peak";
   document.addEventListener("click",e=>{
@@ -548,7 +402,6 @@ function init(){
   [22050,24000,44100,48000].forEach(v=>$("sampleRate").add(new Option((v/1000)+" kHz",v)));$("sampleRate").value=44100;
   [16,24].forEach(v=>$("bitDepth").add(new Option(v+"-bit",v)));$("bitDepth").value=16;
   setSeg("channels",store.get("channels","1"));setSeg("bitrate",store.get("bitrate","96"));
-  preset=store.get("preset","best");
 }
 init();wire();refresh();pollLogs();
 </script></body></html>

@@ -12,6 +12,7 @@
 #   --out DIR            output folder (default: output/<book name>)
 #   --format mp3         mp3 instead of lossless wav
 #   --plain              plain log lines instead of the live dashboard (for nohup / logs)
+#   --no-blend           skip the voice blend (XTTS cleanup, level and tone matching) after rendering
 #   -y, --yes            don't ask for confirmation
 #
 # Safe to stop at any time (Ctrl+C). Run the same command again to resume.
@@ -27,7 +28,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # check, no imports), so an empty venv can't shadow a working one.
 has_deps() {
   [[ -x "$1" ]] && "$1" -c 'import importlib.util as u,sys
-sys.exit(any(u.find_spec(m) is None for m in ("TTS","torch","rich","soundfile","numpy")))' 2>/dev/null
+sys.exit(any(u.find_spec(m) is None for m in ("TTS","torch","rich","soundfile","numpy","scipy")))' 2>/dev/null
 }
 if [[ -n "${FULLCAST_PYTHON:-}" ]]; then
   PY="$FULLCAST_PYTHON"
@@ -104,7 +105,7 @@ while [[ $# -gt 0 ]]; do
     -y|--yes) YES=1 ;;
     --check) MODE=check; ARGS+=("$1") ;;
     --audition) MODE=audition; ARGS+=("$1") ;;
-    --plain) ARGS+=("$1") ;;
+    --plain|--no-blend) ARGS+=("$1") ;;
     --chapters|--voice|--out|--format|--max-chars|--retries)
       [[ $# -ge 2 ]] || { echo "${R}$1 needs a value${N}"; exit 2; }
       ARGS+=("$1" "$2"); shift ;;
