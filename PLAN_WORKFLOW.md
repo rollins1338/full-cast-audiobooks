@@ -1,7 +1,7 @@
 # Making a full-cast plan.json for any book
 
 Use this file with **DeepSeek Flash**. Point it at this workflow and the EPUB,
-and tell it to follow every step exactly. It must use `plan_tools.py` and read
+and tell it to follow every phase exactly. It must use `plan_tools.py` and read
 the book line by line — no regex or alternating-turn speaker guessing.
 
 You are turning an EPUB into a speaker-labelled plan that `render.sh` renders.
@@ -14,10 +14,34 @@ what has failed before: **you read every line and decide.**
 Run everything from the repo root (the folder containing `plan_tools.py`).
 `<slug>` is a short book name like `my_book`.
 
-> **Two stops are always the user's.** After Step 0 you stop until the user
-> has edited `book.txt` and says go. After Step 9 you stop for good: the
-> user starts the render.
->
+The work runs in **five phases**. Each phase ends at a **gate**, where you
+stop and the user decides. Never cross a gate on your own.
+
+| Phase | What you do | Gate: you stop until… |
+| --- | --- | --- |
+| **1 · Text** | EPUB → cleaned `book.txt`, plus `tts_fixes.md` | **Gate 1:** the user has edited `book.txt`, answered the fixes and says "go" |
+| **2 · Read** | Extract; scouts read the whole book; you write `bible.md` | no gate: go straight on to Phase 3 |
+| **3 · Cast** | `book.json`, `cast_voices/` | **Gate 2:** the user approves every voice |
+| **4 · Label** | Helpers label, `verify` until clean, fresh reviewers re-check, questions for the user | **Gate 3:** the user answers `questions.md` |
+| **5 · Build** | Final checks, `plan.json`, `report.md` | **Gate 4:** you stop for good; the user starts the render |
+
+**Keep `books/<slug>/progress.md` up to date.** Create it at the start of
+Phase 1 and rewrite it every time you finish a numbered part, cross a gate,
+or stop. When you start or resume work on a book, read it first and carry
+on from there; never start a phase over because you lost track.
+
+```
+# Progress: <slug>
+Phase: 4 · Label
+Done: 4.1 labelled 31/47 chapters (waves 1-2 back, wave 3 running)
+Waiting on: nothing
+Next: collect wave 3, then 4.2 verify
+Notes: user chose deep POV option A at Gate 2; late cast: Proctor (af_sarah)
+```
+
+`Waiting on:` names the gate when you're stopped at one ("Gate 2: user is
+reviewing cast_voices/").
+
 > **Never start a render.** Your job ends when `plan.json` and the report are
 > done. Rendering always waits for the user's go-ahead, and the user starts it
 > themselves. Don't run `./render.sh` without `--check`, don't render a test
@@ -42,7 +66,7 @@ Use both kinds, together:
 
 | Kind | Tools | Best for |
 | --- | --- | --- |
-| **ACP delegates** | `acp_delegate`, `acp_delegate_wait`, `acp_delegate_cancel`, `acp_delegate_list` | Long background batches: scouting (step 2), labelling (step 4), review (step 6). They run while you keep working; up to 6 at a time, the rest queue. |
+| **ACP delegates** | `acp_delegate`, `acp_delegate_wait`, `acp_delegate_cancel`, `acp_delegate_list` | Long background batches: scouting (2.2), labelling (4.1), review (4.3). They run while you keep working; up to 6 at a time, the rest queue. |
 | **Subagents** | the client's subagent tool (for example pi's `subagent`, with parallel `tasks`) | Short jobs whose answer you need before you go on: settle an alias question, re-check one chapter, compare two readings of a passage. |
 
 When the delegate queue is full, subagents add more parallel capacity. If
@@ -69,14 +93,22 @@ the API starts returning rate-limit errors, run fewer at once.
 - Helpers never write `book.json`, `bible.md` or `reviewed.json`. Those are
   yours.
 - Two helpers never write the same file.
-- The user's checkpoints don't move: the cast approval in step 3 and the
-  questions in step 7 are always yours to bring to the user.
+- The gates don't move: the cast approval (Gate 2) and the questions
+  (Gate 3) are always yours to bring to the user.
 - If neither tool is available, say so, and do the batches yourself, one
   at a time.
 
 ---
 
-## Step 0: Make the clean text, then STOP
+# Phase 1 · Text
+
+- **Goal:** the book as clean, editable plain text, and a list of the spots
+  XTTS will read wrong.
+- **Needs:** the EPUB.
+- **Done when:** `book.txt` is cleaned, `tts_fixes.md` is written, and you've
+  stopped at Gate 1.
+
+## 1.1 Make the clean text
 
 ```bash
 python3 plan_tools.py totext "<book>.epub" books/<slug>
@@ -103,7 +135,7 @@ Clean it, editing `book.txt` in place:
 On a big book, split the cleaning across helpers by section, one helper
 per range of sections, each editing only its own range.
 
-### XTTS quirks: find them, propose fixes, ask the user
+## 1.2 XTTS quirks: find them, propose fixes
 
 The renderer (XTTS-v2) reads the text literally, and some text comes out
 wrong. While cleaning, find every case below and **propose** a fix, but
@@ -149,7 +181,9 @@ Keep the "Text" column to a few words around the problem. When the same
 fix applies everywhere (every "Prof." → "Professor"), list it once with a
 count.
 
-Then **STOP and tell the user:**
+## Gate 1: the user edits the text
+
+**STOP and tell the user:**
 
 - the path to `book.txt`, and its section, paragraph and word counts;
 - each section you deleted, and what kinds of junk you fixed;
@@ -162,12 +196,21 @@ the new counts and confirm what you changed.
 
 The user edits `book.txt` however they like: cuts a scene, rewrites a
 passage, renames something. **Wait for their go-ahead.** Applying their
-approved fixes isn't a go-ahead either: after that, wait for their "go". Don't run Step 1,
-read ahead or start the bible until they say go, however long it takes.
+approved fixes isn't a go-ahead either: after that, wait for their "go". Don't start
+Phase 2, read ahead or send out scouts until they say go, however long it takes.
 
-## Step 1: Extract
+# Phase 2 · Read
 
-Only after the user's go-ahead on Step 0:
+- **Goal:** the whole book read, and everything learned written into
+  `bible.md`.
+- **Needs:** the user's "go" at Gate 1.
+- **Done when:** `extract/` exists, every slice has a scout report in
+  `scout/`, and `bible.md` covers every item in 2.3. There is no gate here:
+  go straight on to Phase 3.
+
+## 2.1 Extract
+
+Only after the user's "go" at Gate 1:
 
 ```bash
 python3 plan_tools.py extract books/<slug>/book.txt books/<slug>
@@ -175,10 +218,10 @@ python3 plan_tools.py extract books/<slug>/book.txt books/<slug>
 
 From here on `book.txt` is the book. Don't go back to the EPUB, and don't
 edit `book.txt` yourself. If a helper spots another XTTS quirk later,
-add it to `tts_fixes.md` and ask the user about it in Step 7. If they
+add it to `tts_fixes.md` and ask the user about it at Gate 3 (4.4). If they
 approve, edit `book.txt`, re-extract and redo that chapter. If the user edits it again later, run this step
 again. Paragraph IDs can shift in the sections they changed, so redo those
-chapters from Step 4.
+chapters from 4.1.
 
 This writes `books/<slug>/extract/uNNN.txt`, one file per EPUB section.
 Every paragraph gets an ID:
@@ -191,46 +234,21 @@ u007p0012 | “Hand me the map,” Mom said.
 - Scene-break lines (`* * *`) are already removed.
 - `extract/index.json` lists the sections with word counts and first lines.
 
-## Step 2: Read the whole book, write the bible
+## 2.2 Scout the book (always)
 
-Nothing gets labelled until the whole book has been read. How it gets read
-depends on its size. Check the word counts in `extract/index.json`.
+Nothing gets labelled until the whole book has been read, and **scouts always
+do the reading**, whatever the book's size. Reading a whole novel yourself
+fills your context before the labelling even starts; scouts read in parallel
+and finish sooner. You still know the book first-hand: you read chapter 1 in
+full and every passage the scouts flag (item 3 below).
 
-- **Small book** (it fits comfortably in your context with room to work,
-  roughly under 100k words): read **every** `extract/u*.txt` yourself, from
-  start to finish.
-- **Big book** (anything larger, or a series omnibus): split the reading
-  across helpers. See "Big books: the scout pass" below.
-
-Either way, you end with `books/<slug>/bible.md` containing:
-
-- **Narration mode per chapter.**
-  - *Third person* (`he/she` prose): narration is spoken by `Narrator`.
-  - *First person* (`I` prose): narration is spoken by the POV character.
-  - Name the POV character of each chapter. Note mid-chapter POV switches
-    and the paragraph ID where each one happens.
-  - *Deep third person limited:* see "Deep POV books" below. Decide whether
-    the book is one before step 3.
-- **Characters.** For each one:
-  - canonical name, plus every alias: nicknames, titles, "Mom", "the
-    Captain", surname-only uses
-  - gender and rough age
-  - relationships ("Mom" = Ruth, Daniel's mother)
-  - which chapters they appear in
-  - speech habits that identify them (pet names they use, swearing, accent,
-    catchphrases)
-- **Unnamed or minor speakers** (`Waiter`, `Guard 1`, `Girl at party`).
-  Keep their count small and reuse names.
-- **Traps.** Twins, two people with the same nickname, a character whose
-  name changes, flashbacks, phone calls, text messages, letters.
-
-### Big books: the scout pass
-
-1. **Slice the book.** Cut the chapters, in reading order, into slices of
-   roughly 20–30k words. Never split a chapter across slices.
+1. **Slice the book.** Check the word counts in `extract/index.json`. Cut
+   the chapters, in reading order, into slices of roughly 20–30k words.
+   Never split a chapter across slices. A short book still gets at least 2
+   slices.
 2. **Send out scouts.** Give each slice to its own helper (ACP delegates
    with `agent: "worker"`; add subagents if you want more running at once).
-   Each brief includes this file's Step 2, the slice's extract file paths,
+   Each brief includes this file's 2.2 and 2.3, the slice's extract file paths,
    and the output path `books/<slug>/scout/<first unit>-<last unit>.md`.
    Each scout reads its slice in full and writes, citing paragraph IDs
    throughout:
@@ -243,7 +261,7 @@ Either way, you end with `books/<slug>/bible.md` containing:
    - **Unnamed speakers** (`the bartender`, `a girl in the hall`).
    - **Deep-POV evidence:** a few paragraphs where narration slides into a
      character's own thoughts, and a few where it doesn't.
-   - **Traps** in the list above, and **open questions** ("is 'the boss'
+   - **Traps** in the 2.3 list, and **open questions** ("is 'the boss'
      in u031p0040 Logan?").
 3. **Merge them yourself.** Read `extract/index.json`, every scout report,
    the first chapter in full, and every paragraph a scout cites as a trap
@@ -260,10 +278,34 @@ Either way, you end with `books/<slug>/bible.md` containing:
    draft bible back out to fresh scouts, one per slice, to check every
    character and alias against their slice. Merge their corrections.
 
-The scouts' reading is the bible's evidence: make the step 3 cast and the
-step 4 briefs from it, and keep `scout/` until the plan is built.
+The scouts' reading is the bible's evidence: make the Phase 3 cast and the
+4.1 briefs from it, and keep `scout/` until the plan is built.
 
-### Deep POV books (deep third person limited)
+## 2.3 Write the bible
+
+You end Phase 2 with `books/<slug>/bible.md` containing:
+
+- **Narration mode per chapter.**
+  - *Third person* (`he/she` prose): narration is spoken by `Narrator`.
+  - *First person* (`I` prose): narration is spoken by the POV character.
+  - Name the POV character of each chapter. Note mid-chapter POV switches
+    and the paragraph ID where each one happens.
+  - *Deep third person limited:* see 2.4. Decide whether
+    the book is one before Phase 3.
+- **Characters.** For each one:
+  - canonical name, plus every alias: nicknames, titles, "Mom", "the
+    Captain", surname-only uses
+  - gender and rough age
+  - relationships ("Mom" = Ruth, Daniel's mother)
+  - which chapters they appear in
+  - speech habits that identify them (pet names they use, swearing, accent,
+    catchphrases)
+- **Unnamed or minor speakers** (`Waiter`, `Guard 1`, `Girl at party`).
+  Keep their count small and reuse names.
+- **Traps.** Twins, two people with the same nickname, a character whose
+  name changes, flashbacks, phone calls, text messages, letters.
+
+## 2.4 Deep POV books (deep third person limited)
 
 Many modern novels (romance, YA, thrillers and more) are written in
 **deep third person limited**. The grammar is third person (`he`, `she`), but almost all of the prose is the POV
@@ -286,7 +328,7 @@ vocabulary and opinions change with whose chapter it is.
    mid-paragraph voice switches that sound broken. Rule 7 still applies:
    first-person thoughts and direct present-tense ones go to the thinker,
    and third-person ones stay with the narrator.
-2. **Stop and tell the user in step 3** that the book is deep POV, with 2–3
+2. **Tell the user at Gate 2** that the book is deep POV, with 2–3
    short example paragraphs as evidence. Let them choose:
    - **A. POV voices** (recommended for deep POV): each chapter's narration is
      voiced by that chapter's POV character, like a first-person book. Set
@@ -306,9 +348,9 @@ vocabulary and opinions change with whose chapter it is.
    `narrated_by_changes` at the exact paragraph.
 5. **Option A sets `"pov_mode": "deep_pov"`** in `book.json`. Option B
    leaves it `"third_person"`. This also decides who speaks the POV headers
-   (see "POV changes" below).
+   (see 2.5).
 
-### POV changes (who says the POV character's name)
+## 2.5 POV changes (who says the POV character's name)
 
 Many books mark whose point of view a chapter or section is in with a
 header. Examples: a line `DANIEL`, `Mara`, `Chapter 3 - Daniel`, or a name
@@ -335,7 +377,14 @@ automatically:
 - `verify` warns (`POV_HEADER_NAME`) if a POV header names nobody in the
   cast or aliases.
 
-## Step 3: Write `books/<slug>/book.json`, then STOP and ask the user
+# Phase 3 · Cast
+
+- **Goal:** every speaker has a voice the user has approved.
+- **Needs:** `bible.md` and the scout reports.
+- **Done when:** `book.json` is written, `cast_voices/` matches it, and the
+  user has given the go-ahead at Gate 2.
+
+## 3.1 Write `books/<slug>/book.json`
 
 ```json
 {
@@ -366,9 +415,9 @@ automatically:
   `voices/` without the extension (`ls voices/`). Every speaker you will
   ever use must be a key here, `Narrator` included. Several minor characters
   may share one voice. **Propose** voices by gender and age. Voice choice
-  is the user's call; see "The cast review" below.
+  is the user's call; see Gate 2 below.
 - **`main`** lists the main characters: the POV characters and the other
-  leads. It's usually 2–4 names. The user confirms it in the cast review. Step 7 only asks the user about
+  leads. It's usually 2–4 names. The user confirms it at Gate 2. Gate 3 only asks the user about
   lines involving these characters.
 - **`aliases`** feeds the self-address check in `verify`. Put every name
   others use for that character here.
@@ -378,8 +427,8 @@ automatically:
     and `"to": "<last para id>"`.
   - Front/back matter (copyright, dedication, acknowledgements, "also by",
     TOC) gets no chapter.
-- **`pov_mode`** is `first_person`, `third_person` or `deep_pov` (see "Deep
-  POV books" and "POV changes"). Ask the user if unsure.
+- **`pov_mode`** is `first_person`, `third_person` or `deep_pov` (see 2.4
+  and 2.5). Ask the user if unsure.
 - **`narrated_by`** is who voices `NARRATION` in that chapter: `Narrator`
   for third person, the POV character for first person and `deep_pov`.
   `narrated_by_changes` switches it from a given paragraph on.
@@ -392,12 +441,12 @@ automatically:
   Mia's story will continue in Empire of Rain!"), and ask the user when you
   aren't sure of the name. Write the author's name the way it should be
   spoken: `Silken Starling`, not the handle `Silken_Starling`. Show both
-  lines to the user in the cast review.
+  lines to the user at Gate 2.
 - **The 2-second pauses are automatic.** `build` puts 2 seconds of silence
   after the `announcement` and before the `outro` in `plan.json`. Don't add
   them yourself, and don't hand-edit `plan.json` to change them.
 
-### The cast review
+## 3.2 Copy the cast voices
 
 When `book.json` is written, copy every chosen voice into the book's
 folder so the user can listen to them:
@@ -412,21 +461,32 @@ characters, then everyone else. A character who shares a voice gets their
 own copy. If it says `MISSING`, the voice name in `cast` doesn't match a
 file in `voices/`. Fix the name and run it again.
 
-Then **STOP and show the user:**
+## Gate 2: the user approves the cast
+
+**STOP and show the user:**
 
 - the path to `cast_voices/`;
 - the cast table: character, voice, a one-line description (gender, age,
   role) and roughly how many lines they have;
 - the `main` list;
-- the `announcement` and `outro` lines.
+- the `announcement` and `outro` lines;
+- for a deep POV book, the A/B choice from 2.4 with 2–3 example paragraphs.
 
 **The user has the final call on every voice.** They listen, then change
 any voice they want. Apply each change to `cast` in `book.json`, run
 `castvoices` again so the folder matches, and show the new table. Repeat
-until they give the go-ahead. Don't start step 4, or hand any work to a
+until they give the go-ahead. Don't start Phase 4, or hand any work to a
 helper, until they do.
 
-## Step 4: Label the chapters (parallel helpers)
+# Phase 4 · Label
+
+- **Goal:** every line of every chapter has the right speaker, checked twice.
+- **Needs:** the user's go-ahead at Gate 2.
+- **Done when:** every chapter shows `0 errors, 0 unreviewed warnings`,
+  every chapter has had an independent review, and the user has answered
+  `questions.md` at Gate 3.
+
+## 4.1 Label the chapters (parallel helpers)
 
 Once the user has approved the cast, split the chapters into batches of
 about 3–5 and hand each batch to its own **worker** delegate
@@ -455,7 +515,7 @@ ones it may leave. When the results come back, you, the main agent, add the
 new characters to the cast, then re-run `verify --chapter <id>` on those
 chapters yourself.
 
-**Late additions.** The user approved the cast in step 3, so every character
+**Late additions.** The user approved the cast at Gate 2, so every character
 added after that is unapproved:
 - Before adding one, check it isn't an alias of an existing character, or a
   minor speaker you could reuse (`Guard 1`). Add a new name only when
@@ -464,7 +524,7 @@ added after that is unapproved:
   and record it in `books/<slug>/late_cast.md`: name, provisional voice,
   first paragraph ID, a one-line description and roughly how many lines it
   has.
-- Don't stop labelling to ask. The user reviews these in step 7.
+- Don't stop labelling to ask. The user reviews these at Gate 3.
 
 For each chapter write `books/<slug>/segments/<id>.json`, one segment per
 line:
@@ -490,7 +550,7 @@ Each segment is `[paragraph_id, speaker, text]`.
 - **speaker** is one of:
   - a cast name
   - `NARRATION`: prose, voiced by `narrated_by`
-  - `POV_HEADER`: a POV marker, spoken aloud (see "POV changes" below)
+  - `POV_HEADER`: a POV marker, spoken aloud (see 2.5)
   - `SKIP`: not spoken. Chapter headings that `announce` already covers,
     epigraph credits.
 - **Split each paragraph** at every switch between quoted speech and prose.
@@ -567,7 +627,7 @@ Each segment is `[paragraph_id, speaker, text]`.
      outside quotes is almost always a first-person thought, so it goes to
      the thinker.
    - **Unsure whether something is a thought, whose it is, or which side of
-     the line it falls on?** Ask the user in step 7.
+     the line it falls on?** Ask the user at Gate 3.
 8. **Texts, letters, notes, signs** are voiced by whoever wrote them. Read
    aloud by someone else? Then by the reader.
 9. **Phone calls, flashbacks, dreams**: the actual speaker, even when absent
@@ -587,16 +647,16 @@ Each segment is `[paragraph_id, speaker, text]`.
     - The reverse mistake: description that mentions speech without quoting
       it (`She told him to leave.`) is `NARRATION`, not her line.
     - When you can't tell whether a quote is spoken or narration, it goes
-      to the user in step 7.
+      to the user at Gate 3.
 11. **Never guess.** If two readings stay possible after rules 1–10, read the
     surrounding page again. Choose the one the following lines confirm (who
     answers what, who reacts). Write the reason into `reviewed.json` (see
-    step 5).
+    4.2).
 
 Keep `bible.md` open while labelling. If a new character appears, add them
 to the bible, `cast` and `aliases` first.
 
-## Step 5: Verify each chapter until clean
+## 4.2 Verify each chapter until clean
 
 ```bash
 python3 plan_tools.py verify books/<slug> --chapter 001
@@ -638,7 +698,7 @@ python3 plan_tools.py verify books/<slug> --chapter 001
 Don't move to the next chapter until its verify shows `0 errors, 0
 unreviewed warnings`.
 
-## Step 6: Independent review (second check, parallel helpers)
+## 4.3 Independent review (second check, parallel helpers)
 
 Every chapter is checked a second time by a **fresh reviewer**: an ACP
 delegate (`acp_delegate`, `agent: "reviewer"`, `async: true`) or a subagent,
@@ -648,7 +708,7 @@ Reviewers read whole chapters slowly, so give them a long limit (e.g.
 
 1. Each reviewer's brief names this file, `bible.md`, `book.json`, its chapter
    IDs, and their `segments/<id>.json`. Batch the chapters the same way as
-   step 4, with different pairings.
+   4.1, with different pairings.
 2. The reviewer reads the source chapter in full from `extract/` and
    re-decides the speaker of **every** dialogue line and thought on its
    own, using the attribution rules. It must not trust the existing labels.
@@ -689,10 +749,10 @@ Reviewers read whole chapters slowly, so give them a long limit (e.g.
    valid disagreements.
 6. Run `verify --chapter <id>` again on every chapter you changed.
 
-Never skip this step, even when step 4 looked clean. Most wrong-speaker
+Never skip this step, even when 4.1 looked clean. Most wrong-speaker
 bugs survive a single pass.
 
-## Step 7: Ask the user about anything still uncertain
+## 4.4 Collect the questions
 
 After both passes, collect every line where you are **not fully sure** of
 the speaker. That includes:
@@ -701,7 +761,7 @@ the speaker. That includes:
 - pronoun tags with two possible people
 - any `reviewed.json` reason that contains a guess
 
-Also ask about any new XTTS quirk a helper found after Step 0 (see
+Also ask about any new XTTS quirk a helper found after Phase 1 (see
 `tts_fixes.md`), whatever character it involves.
 
 Don't hide doubts to look finished. A line is uncertain if you would bet
@@ -728,7 +788,7 @@ ID, description and line count. Add every late addition to `cast` with its
 provisional voice and run `castvoices` first, so the user can listen to
 the new voices in `cast_voices/` too. The user confirms or changes each
 voice, and may merge a character into an existing one; apply that in
-`book.json` and `segments/`, and run `castvoices` again, before step 8.
+`book.json` and `segments/`, and run `castvoices` again, before Phase 5.
 
 Write them all to `books/<slug>/questions.md` and show the list to the user
 in chat. Number every question, and show each one like this:
@@ -752,7 +812,9 @@ Why unsure: two men present, tag is only "he said"
   reason for the doubt in one line.
 - Group the questions by chapter, in reading order.
 
-Then **stop and wait.** The user answers by number (e.g. "Q3 Tom, Q4 keep,
+## Gate 3: the user answers the questions
+
+**Stop and wait.** The user answers by number (e.g. "Q3 Tom, Q4 keep,
 Q7 Ruth").
 - Apply each answer to `segments/<id>.json` exactly as given.
 - If an answer changes who speaks in an alternating run, re-check the rest
@@ -760,9 +822,17 @@ Q7 Ruth").
 - Record each one in `reviewed.json` as `USER:<p>`: "user: <answer>".
 - Re-run `verify` on the chapters you touched.
 
-If no doubts remain, say so explicitly and move on.
+If no doubts remain and there are no late cast additions, say so
+explicitly and move on to Phase 5 without stopping.
 
-## Step 8: Final pass and build
+# Phase 5 · Build
+
+- **Goal:** `plan.json` and a report the user can check before rendering.
+- **Needs:** Gate 3 answered (or no questions left).
+- **Done when:** `build` has written `plan.json`, `report.md` is shown to
+  the user, and you've stopped for good at Gate 4.
+
+## 5.1 Final pass and build
 
 1. Run `python3 plan_tools.py verify books/<slug>` for the whole book. That
    adds the book-wide checks (single-line speakers, unused cast, skipped
@@ -778,7 +848,7 @@ python3 plan_tools.py build books/<slug>
 `books/<slug>/plan.json` with the announcement, chapter announcements,
 narration resolved to the right voice per chapter, and absolute voice paths.
 
-## Step 9: Final report to the user
+## 5.2 Final report to the user
 
 When the plan is built, write `books/<slug>/report.md` and show it to the
 user in chat. It has two parts.
@@ -815,11 +885,14 @@ over 80% of the book.
   Give one or two real examples each, with paragraph IDs.
 - **What the review changed.** Disagreements per chapter, how many were real
   fixes, and which chapters needed a third pass.
-- **The user's answers from step 7,** and what they changed.
+- **The user's answers at Gate 3,** and what they changed.
 - **Remaining risks.** Any spot you would still double-check by listening,
   with chapter and paragraph ID. If there are none, say so.
 
-**Stop here.** Post the report and end your turn. Do not render. The user
+## Gate 4: the user starts the render
+
+**Stop here for good.** Post the report, set `progress.md` to "Phase 5
+done, waiting on: the user to render", and end your turn. Do not render. The user
 reads the report and gives the final go-ahead, then runs the render
 themselves:
 
@@ -831,10 +904,9 @@ themselves:
 ## Efficiency notes
 
 - The main agent stays in charge: it owns `book.json`, `bible.md`,
-  `reviewed.json` and every final decision. It reads a small book fully in
-  step 2; on a big book the scouts read it and the main agent reads their
-  reports plus the passages they flag. Helpers do the chapter-by-chapter
-  reading in steps 4 and 6.
+  `reviewed.json` and every final decision. In Phase 2 the scouts do the
+  reading; it reads their reports, chapter 1 and the passages they flag. Helpers do the chapter-by-chapter reading in 4.1 and
+  4.3.
 - Workers and reviewers each re-read only their own chapters,
   plus the end of the previous chapter for scene continuity.
 - Never let two helpers write the same file.

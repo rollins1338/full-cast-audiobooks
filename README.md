@@ -107,7 +107,7 @@ and exports an **M4B with chapter markers**.
 | Stage | Tool | What it does |
 | --- | --- | --- |
 | **Plan** | [`PLAN_WORKFLOW.md`](PLAN_WORKFLOW.md) + `plan_tools.py` | An LLM reads the book and labels every paragraph. The tools prove no text was dropped or changed, flag suspicious labels, and build `plan.json`. |
-| **Render** | `render.sh` | Clones each speaker's voice with XTTS-v2, voices every line and writes one lossless WAV per chapter. |
+| **Render** | `render.sh` | Clones each speaker's voice with XTTS-v2, voices every line, writes one lossless WAV per chapter and voice-blends it so the cast sounds like one recording. |
 | **Master** | `wav_merger/` | Joins the chapters, applies ACX mastering and exports WAV + M4B. |
 
 <br>
@@ -201,11 +201,19 @@ This opens <http://localhost:8775> with your chapters preloaded. It exports
 | `--out DIR` | Sets the output folder (default `output/<book name>`). |
 | `--format mp3` | Writes MP3 instead of lossless WAV. |
 | `--plain` | Prints plain log lines instead of the dashboard, for `nohup` and logs. |
+| `--no-blend` | Leaves the chapters raw: skips the voice blend below. |
 | `-y`, `--yes` | Skips the confirmation prompt. |
 
 **Output:** `output/<book>/` holds one mono 24 kHz WAV per chapter (`001.wav`,
 `002.wav`, …), plus `Chapter_manifest.txt` and `render_report.json`, which lists
 any suspect chunks with their chapter and timestamp.
+
+**Voice blend:** after the chapters are written, `render.sh` rebuilds each one from
+its per-line clips so the cast sounds like one recording: trimmed line ends, steady
+tone per character, matched mic tone across the cast (above 300 Hz, so voices keep
+their own pitch and body), level matching, edge fades, de-hiss and de-ess. No XTTS
+re-render is involved. Chapters already blended are skipped, and a chapter that
+changes is blended again on the next run.
 
 > [!TIP]
 > **Stop whenever you like.** Run the same command again and it picks up from the
@@ -259,18 +267,17 @@ Speaker labelling is the hard part. Regex and alternating-turn scripts get it
 wrong all the time, so a model **reads every line**, following
 [`PLAN_WORKFLOW.md`](PLAN_WORKFLOW.md):
 
-| Step | What happens |
-| :---: | --- |
-| 0 | **Clean text:** turn the EPUB into `book.txt`, strip the non-story pages, and stop for you to edit it. |
-| 1 | **Extract:** split your edited `book.txt` into numbered paragraphs, keeping italics. |
-| 2 | **Bible:** read the whole book and note the narrator, POV style, cast, aliases and how each character talks. Big books are split across parallel scouts. |
-| 3 | **Cast:** write `book.json`, copy every chosen voice into `cast_voices/`, and stop so you can listen and change any of them. |
-| 4 | **Label:** parallel workers (ACP delegates and subagents) label the chapters, following 11 attribution rules. |
-| 5 | **Verify:** `plan_tools.py verify` until every chapter is clean. |
-| 6 | **Review:** fresh reviewers re-check every chapter independently. |
-| 7 | **Ask:** anything still uncertain about the main characters comes to you, with context. |
-| 8 | **Build:** a final pass, then `plan.json`. |
-| 9 | **Report:** the dialogue share per speaker, plus the decisions it made. It never starts the render; you do. |
+It runs in five phases. Each one ends at a gate where the model stops and
+**you** decide, and it keeps `books/<slug>/progress.md` so it can always pick up
+where it left off.
+
+| Phase | What happens | Gate |
+| :---: | --- | --- |
+| 1 · Text | Turn the EPUB into a cleaned `book.txt`, and list the spots XTTS would read wrong in `tts_fixes.md`. | You edit `book.txt`, approve fixes, say go. |
+| 2 · Read | Split `book.txt` into numbered paragraphs. Parallel scouts read the whole book, and the model merges their notes into a bible: narrator, POV style, cast, aliases, how each character talks. | — |
+| 3 · Cast | Write `book.json` and copy every chosen voice into `cast_voices/`. | You listen and approve or change any voice. |
+| 4 · Label | Parallel workers (ACP delegates and subagents) label the chapters with 11 attribution rules, `verify` until clean, then fresh reviewers re-check every chapter. Anything still uncertain about the main characters comes to you, with context. | You answer the questions. |
+| 5 · Build | A final pass, `plan.json`, and a report: dialogue share per speaker and the decisions it made. | You start the render. The model never does. |
 
 #### Point-of-view modes
 
