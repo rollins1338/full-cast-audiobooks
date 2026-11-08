@@ -33,7 +33,8 @@ There's no cloud TTS, no API keys and no per-word cost.
 
 ### 🎭 The right voice on every line
 An LLM reads **the whole book**, labels chapters in parallel with ACP
-delegates, then has fresh delegates review the result independently. If it's still unsure who said a
+delegates, then has fresh delegates label every chapter again blind, and
+compares the two. If it's still unsure who said a
 main-character line, it asks you, with context.
 
 </td>
@@ -273,10 +274,10 @@ where it left off.
 
 | Phase | What happens | Gate |
 | :---: | --- | --- |
-| 1 · Text | Turn the EPUB into a cleaned `book.txt`, and list the spots XTTS would read wrong in `tts_fixes.md`. | You edit `book.txt`, approve fixes, say go. |
-| 2 · Read | Split `book.txt` into numbered paragraphs. Parallel scouts read the whole book, and the model merges their notes into a bible: narrator, POV style, cast, aliases, how each character talks. | — |
-| 3 · Cast | Write `book.json` and copy every chosen voice into `cast_voices/`. | You listen and approve or change any voice. |
-| 4 · Label | Parallel workers (ACP delegates and subagents) label the chapters with 11 attribution rules, `verify` until clean, then fresh reviewers re-check every chapter. Anything still uncertain about the main characters comes to you, with context. | You answer the questions. |
+| 1 · Text | Turn the EPUB into a cleaned `book.txt`, fix the source's typos and punctuation (logged in `text_fixes.md`), list the spots XTTS would read wrong in `tts_fixes.md`, and render a short pronunciation test so you can hear the fixes. | You edit `book.txt`, approve fixes, say go. |
+| 2 · Read | Split `book.txt` into numbered paragraphs. Parallel scouts read the whole book (the model reads books under 40k words itself), and the model merges their notes into a bible: narrator, POV style, cast, aliases, how each character talks. | — |
+| 3 · Cast | Write `book.json` (returning series characters keep their voices) and copy every chosen voice into `cast_voices/`. | You listen and approve or change any voice. |
+| 4 · Label | Parallel workers (ACP delegates and subagents, at most 4 at a time) label the chapters with 11 attribution rules, `verify` until clean, then blind reviewers label every chapter again and `compare` lists each line where they disagree. Anything still uncertain about the main characters comes to you, with context. | You answer the questions. |
 | 5 · Build | A final pass, `plan.json`, and a report: dialogue share per speaker and the decisions it made. | You start the render. The model never does. |
 
 #### Point-of-view modes
@@ -301,6 +302,9 @@ python3 plan_tools.py totext  sources/book.epub books/<slug>    # book.txt to ed
 python3 plan_tools.py extract books/<slug>/book.txt books/<slug> # numbered paragraphs
 python3 plan_tools.py castvoices books/<slug>                  # cast voices to review
 python3 plan_tools.py verify  books/<slug> [--chapter 003]     # text fidelity + label warnings
+python3 plan_tools.py context books/<slug>                     # ctx/: end of the chapter before each one
+python3 plan_tools.py compare books/<slug> [--chapter 003]     # blind review vs labels -> review/
+python3 plan_tools.py prontest books/<slug> [--voice NAME]     # pron_test.json -> a test plan to render
 python3 plan_tools.py build   books/<slug>                     # -> books/<slug>/plan.json
 python3 plan_tools.py stats   books/<slug>                     # who speaks how much
 ```
@@ -346,7 +350,8 @@ full-cast-audiobooks/
 ├── 🎬 render.sh              launcher: dashboard, resume, auto-restart
 ├── 🔊 render_engine.py       XTTS-v2 renderer behind render.sh
 ├── 🧠 PLAN_WORKFLOW.md       how the model turns a book into plan.json
-├── 🛠️ plan_tools.py          totext · extract · castvoices · verify · build · stats
+├── 📝 briefs/                short briefs for the scout, worker and reviewer helpers
+├── 🛠️ plan_tools.py          totext · extract · castvoices · verify · context · compare · prontest · build · stats
 ├── 📚 sources/               your EPUBs (git-ignored)
 ├── 📁 books/<slug>/          per-book extraction, labels and plan.json
 ├── 🎙️ voices/                voice catalogue (clips git-ignored)

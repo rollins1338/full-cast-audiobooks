@@ -5,7 +5,10 @@
     python3 plan_tools.py extract books/<slug>/book.txt books/<slug>   # numbered paragraphs
                                                              # (a .epub works here too)
     python3 plan_tools.py castvoices books/<slug>            # copy the chosen voices for review
-    python3 plan_tools.py verify  books/<slug> [--chapter 003]
+    python3 plan_tools.py verify  books/<slug> [--chapter 003] [--dir blind]
+    python3 plan_tools.py context books/<slug> [--chapter 006]   # ctx/<id>-prev.txt scene tails
+    python3 plan_tools.py compare books/<slug> --chapter 003     # blind review vs labels
+    python3 plan_tools.py prontest books/<slug> [--voice NAME]   # pron_test.json -> test plan
     python3 plan_tools.py build   books/<slug>               # -> books/<slug>/plan.json
     python3 plan_tools.py stats   books/<slug> | plan.json   # who speaks how much
 
@@ -269,8 +272,8 @@ def cmd_castvoices(args):
     return 1 if missing else 0
 
 
-def load_segments(book_dir, chapter_id):
-    f = book_dir / "segments" / f"{chapter_id}.json"
+def load_segments(book_dir, chapter_id, folder="segments"):
+    f = book_dir / folder / f"{chapter_id}.json"
     if not f.is_file():
         return None
     data = json.loads(f.read_text(encoding="utf-8"))
@@ -302,7 +305,11 @@ TAG_VERBS = (r"said|says|asked|asks|replied|answered|added|murmured|whispered|sh
 THOUGHT_TAG_RE = re.compile(r"[,.?!…—-]\s*(?:he|she|they|[A-Z][a-z]+)\s+(?:thought|wondered|"
                             r"told (?:himself|herself|themself|themselves)|reminded (?:himself|herself)|"
                             r"prayed|mused|decided)\b")
-TAG_RE = re.compile(r"\b(?:he|she|they|I|we|[A-Z][a-z]+)\s+(?:" + TAG_VERBS + r")\b")
+# A swallowed tag follows the end of the spoken words ("..., she said." / "...?" Mom asked),
+# with punctuation before it and the clause ending after it. "I said no" or "He told me
+# to wait" inside someone's speech is not a tag.
+TAG_RE = re.compile(r"[,!?…—–-][\"”’']?\s+(?:he|she|they|I|we|[A-Z][a-z]+)\s+(?:" + TAG_VERBS +
+                    r")(?:\s+(?:softly|quietly|quickly|again|finally|simply|flatly|dryly))?\s*(?:[.,!?…—–-]|$)")
 
 
 def cmd_verify(args):
@@ -347,9 +354,10 @@ def cmd_verify(args):
         for name in [ch.get("narrated_by", "Narrator")] + [n for _, n in ch.get("narrated_by_changes", [])]:
             if name not in cast:
                 err(cid, "narrated_by", f"'{name}' is not in cast")
-        segs = load_segments(book_dir, cid)
+        folder = getattr(args, "dir", None) or "segments"
+        segs = load_segments(book_dir, cid, folder)
         if segs is None:
-            err(cid, "-", f"segments/{cid}.json missing")
+            err(cid, "-", f"{folder}/{cid}.json missing")
             continue
         by_para = defaultdict(list)
         last_order = -1
@@ -507,6 +515,146 @@ def cmd_build(args):
     print(f"{len(chapters)} chapters, {sum(len(c['segments']) for c in chapters)} segments -> {dest}")
 
 
+# ---------------------------------------------------------------- context
+
+def cmd_context(args):
+    """Write ctx/<id>-prev.txt: the last paragraphs of the chapter before, for scene continuity."""
+    book_dir = Path(args.book_dir)
+    book, paras = load_book(book_dir), load_units(book_dir)
+    chapters = book["chapters"]
+    wanted = set(args.chapter or [c["id"] for c in chapters[1:]])
+    dest = book_dir / "ctx"
+    dest.mkdir(exist_ok=True)
+    made = 0
+    for prev, ch in zip(chapters, chapters[1:]):
+        if ch["id"] not in wanted:
+            continue
+        tail = chapter_paragraphs(prev, paras)[-args.n:]
+        head = (f"# Context only - do not label. The last {len(tail)} paragraphs of chapter "
+                f"{prev['id']} ({prev.get('title', '')}), just before chapter {ch['id']}.\n")
+        (dest / f"{ch['id']}-prev.txt").write_text(head + "".join(f"{p} | {paras[p]}\n" for p in tail),
+                                                   encoding="utf-8")
+        made += 1
+    print(f"{made} context file(s) -> {dest}")
+    return 0
+
+
+# ---------------------------------------------------------------- compare
+
+def voiced(book, ch, segs, order):
+    """[(paragraph, who is heard, text)], with NARRATION and POV_HEADER resolved to the real voice."""
+    out = []
+    for pid, speaker, text in segs:
+        if speaker == NARRATION:
+            speaker = narrated_by(ch, pid, order)
+        elif speaker == POV_HEADER:
+            speaker = pov_header_voice(book, ch, pid, order)
+        out.append((pid, speaker, text))
+    return out
+
+
+def char_map(segs):
+    """paragraph -> list of (char, who, segment index) over the normalised text."""
+    by_para = defaultdict(list)
+    for i, (pid, who, text) in enumerate(segs):
+        by_para[pid] += [(c, who, i) for c in norm(text)]
+    return by_para
+
+
+def cmd_compare(args):
+    """Diff a blind review (blind/<id>.json) against the labels (segments/<id>.json).
+
+    Compares who is actually heard, character by character, so a split in a different
+    place or NARRATION vs the POV voice in a first-person chapter is not a disagreement.
+    Writes review/<id>.json in the format 4.3 uses."""
+    book_dir = Path(args.book_dir)
+    book, paras = load_book(book_dir), load_units(book_dir)
+    ids = args.chapter or [c["id"] for c in book["chapters"]]
+    (book_dir / "review").mkdir(exist_ok=True)
+    total, status = 0, 0
+    for ch in book["chapters"]:
+        cid = ch["id"]
+        if cid not in ids:
+            continue
+        labels, blind = load_segments(book_dir, cid), load_segments(book_dir, cid, "blind")
+        if labels is None or blind is None:
+            print(f"[{cid}] skipped: {'segments' if labels is None else 'blind'}/{cid}.json missing")
+            status = 1
+            continue
+        order = {p: i for i, p in enumerate(chapter_paragraphs(ch, paras))}
+        a, b = voiced(book, ch, labels, order), voiced(book, ch, blind, order)
+        ma, mb = char_map(a), char_map(b)
+        found, mismatched = [], []
+        for pid in order:
+            ca, cb = ma.get(pid, []), mb.get(pid, [])
+            if [c for c, _, _ in ca] != [c for c, _, _ in cb]:
+                mismatched.append(pid)
+                continue
+            seen = set()
+            for (_, wa, ia), (_, wb, ib) in zip(ca, cb):
+                if wa != wb and (ia, ib) not in seen:
+                    seen.add((ia, ib))
+                    found.append({"p": pid, "text": a[ia][2], "labelled": wa, "should_be": wb,
+                                  "blind_text": b[ib][2], "why": ""})
+        # one row per labelled segment: keep the first reading the reviewer disagreed with
+        rows, keys = [], set()
+        for f in found:
+            k = (f["p"], f["text"])
+            if k not in keys:
+                keys.add(k)
+                rows.append(f)
+        notes = {}
+        nf = book_dir / "blind" / f"{cid}.notes.json"
+        if nf.is_file():
+            notes = json.loads(nf.read_text(encoding="utf-8"))
+        for r in rows:
+            r["why"] = notes.get(r["p"], "")
+        (book_dir / "review" / f"{cid}.json").write_text(json.dumps(rows, indent=1, ensure_ascii=False),
+                                                         encoding="utf-8")
+        total += len(rows)
+        line = f"[{cid}] {len(rows)} disagreement(s) -> review/{cid}.json"
+        if mismatched:
+            line += (f"; text differs in {len(mismatched)} paragraph(s), e.g. {mismatched[0]}: "
+                     f"run verify --chapter {cid} --dir blind")
+            status = 1
+        print(line)
+    print(f"{total} disagreement(s) in all")
+    return status
+
+
+# ---------------------------------------------------------------- prontest
+
+def cmd_prontest(args):
+    """pron_test.json -> pron_test/plan.json: every test line on its own, one chapter per group."""
+    book_dir = Path(args.book_dir)
+    spec = json.loads((book_dir / "pron_test.json").read_text(encoding="utf-8"))
+    voice = args.voice
+    if not voice and (book_dir / "book.json").is_file():
+        voice = load_book(book_dir)["cast"].get("Narrator")
+    if not voice or not voice_file(voice):
+        print(f"no voice file for {voice!r}: pass --voice with a name from voices/")
+        return 1
+    ref = str(voice_file(voice))
+    lang = spec.get("language", "en")
+    chapters, index = [], [f"# Pronunciation test ({voice})", ""]
+    for n, group in enumerate(spec["groups"], 1):
+        segs = [{"speaker": "Narrator", "voice_ref": ref, "text": line["text"], "language": lang,
+                 "kind": "dialogue", "pause_after": 1.5} for line in group["lines"]]
+        chapters.append({"title": group["title"], "segments": segs})
+        index += [f"## {n:03d}.wav · {group['title']}", ""]
+        index += [f"{i}. {line.get('label', '')}  -  {line['text']}" for i, line in enumerate(group["lines"], 1)]
+        index.append("")
+    dest = book_dir / "pron_test"
+    dest.mkdir(exist_ok=True)
+    plan = {"book": f"{book_dir.name} pronunciation test", "cast": {"Narrator": ref}, "chapters": chapters}
+    (dest / "plan.json").write_text(json.dumps(plan, indent=1, ensure_ascii=False), encoding="utf-8")
+    (dest / "INDEX.md").write_text("\n".join(index), encoding="utf-8")
+    lines = sum(len(g["lines"]) for g in spec["groups"])
+    print(f"{len(chapters)} group(s), {lines} line(s) -> {dest / 'plan.json'}")
+    print(f"render it with: ./render.sh {dest / 'plan.json'} --out {dest} --no-blend --yes --plain")
+    return 0
+
+
 # ---------------------------------------------------------------- stats
 
 def cmd_stats(args):
@@ -566,6 +714,14 @@ def main():
     p = sub.add_parser("castvoices", help="copy book.json's cast voices to books/<slug>/cast_voices/")
     p.add_argument("book_dir")
     p = sub.add_parser("verify"); p.add_argument("book_dir"); p.add_argument("--chapter")
+    p.add_argument("--dir", help="segments folder to check (default segments; a blind reviewer uses blind)")
+    p = sub.add_parser("context", help="ctx/<id>-prev.txt: the end of the chapter before")
+    p.add_argument("book_dir"); p.add_argument("--chapter", action="append")
+    p.add_argument("-n", type=int, default=30, help="paragraphs to include (default 30)")
+    p = sub.add_parser("compare", help="blind/<id>.json vs segments/<id>.json -> review/<id>.json")
+    p.add_argument("book_dir"); p.add_argument("--chapter", action="append")
+    p = sub.add_parser("prontest", help="pron_test.json -> pron_test/plan.json for a pronunciation test")
+    p.add_argument("book_dir"); p.add_argument("--voice", help="voice name from voices/ (default: book.json Narrator)")
     p = sub.add_parser("stats"); p.add_argument("target", help="books/<slug> or any plan.json")
     p = sub.add_parser("build"); p.add_argument("book_dir")
     p.add_argument("--allow-warnings", action="store_true", help="build even with unreviewed warnings")
@@ -578,8 +734,10 @@ def main():
         return cmd_verify(args)
     if args.cmd == "stats":
         return cmd_stats(args)
+    if args.cmd in ("context", "compare", "prontest"):
+        return {"context": cmd_context, "compare": cmd_compare, "prontest": cmd_prontest}[args.cmd](args)
     if args.cmd == "build":
-        status = cmd_verify(argparse.Namespace(book_dir=args.book_dir, chapter=None))
+        status = cmd_verify(argparse.Namespace(book_dir=args.book_dir, chapter=None, dir=None))
         if status == 1 or (status == 2 and not args.allow_warnings):
             print("\nbuild refused: fix the errors and resolve every warning "
                   "(fix it, or add it to reviewed.json with a reason)")

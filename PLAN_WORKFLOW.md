@@ -20,7 +20,7 @@ stop and the user decides. Never cross a gate on your own.
 > **Only stop at a gate.** The four gates and a real blocker (a missing
 > file, a tool that won't run, a question only the user can answer) are the
 > only reasons to end your turn and wait for the user. Everything else you
-> carry on with yourself: finishing a part, a wave of helpers coming back,
+> carry on with yourself: finishing a part, a batch of helpers coming back,
 > a `verify` that fails, a review that finds errors. Never end your turn
 > with "the delegates are running, I'll continue when they finish". Nothing
 > wakes you up when they finish, so you'd sit there until the user notices.
@@ -29,10 +29,10 @@ stop and the user decides. Never cross a gate on your own.
 
 | Phase | What you do | Gate: you stop until… |
 | --- | --- | --- |
-| **1 · Text** | EPUB → cleaned `book.txt`, plus `tts_fixes.md` | **Gate 1:** the user has edited `book.txt`, answered the fixes and says "go" |
-| **2 · Read** | Extract; scouts read the whole book; you write `bible.md` | no gate: go straight on to Phase 3 |
+| **1 · Text** | EPUB → cleaned `book.txt` with typos fixed, plus `text_fixes.md`, `tts_fixes.md` and a pronunciation test | **Gate 1:** the user has edited `book.txt`, answered the fixes and says "go" |
+| **2 · Read** | Extract; scouts read the whole book (you read it yourself if it's under 40k words); you write `bible.md` | no gate: go straight on to Phase 3 |
 | **3 · Cast** | `book.json`, `cast_voices/` | **Gate 2:** the user approves every voice |
-| **4 · Label** | Helpers label, `verify` until clean, fresh reviewers re-check, questions for the user | **Gate 3:** the user answers `questions.md` |
+| **4 · Label** | Helpers label, `verify` until clean, blind reviewers label again and `compare` finds the differences, questions for the user | **Gate 3:** the user answers `questions.md` |
 | **5 · Build** | Final checks, `plan.json`, `report.md` | **Gate 4:** you stop for good; the user starts the render |
 
 **Keep `books/<slug>/progress.md` up to date.** Create it at the start of
@@ -43,9 +43,12 @@ on from there; never start a phase over because you lost track.
 ```
 # Progress: <slug>
 Phase: 4 · Label
-Done: 4.1 labelled 31/47 chapters (waves 1-2 back, wave 3 running)
+Done: 4.1 labelled 31/47 chapters (batches 1-8 back)
+Running (4 max): batch 9 u033-u035 run_a1, batch 10 u036-u038 run_b2,
+  batch 11 u039-u041 run_c3, batch 12 u042-u044 run_d4
+To do: batch 13 u045-u047
 Waiting on: nothing
-Next: collect wave 3, then 4.2 verify
+Next: start batch 13 when a slot frees, then 4.2 verify
 Notes: user chose deep POV option A at Gate 2; late cast: Proctor (af_sarah)
 ```
 
@@ -58,15 +61,24 @@ reviewing cast_voices/").
 > chapter or a sample, and don't tell a helper to. This holds even when
 > everything passes, even when you have time left, and even if an earlier
 > message seemed to allow it. `./render.sh ... --check` is fine: it only
-> prints the cast table, stats and a time estimate.
+> prints the cast table, stats and a time estimate. The **one exception** is
+> the pronunciation test at Gate 1 (1.3): it renders only the test lines in
+> `pron_test/plan.json`, never the book.
 
 ### Helpers: subagents and ACP delegates
 
-You don't have to do the reading alone. Run helpers in parallel, as many and
-as often as the book needs. **You have full permission to design the setup
-yourself:** how many helpers, how big each batch is, which tool runs which
-job, and whether to add extra passes (a reconcile pass, a third review, a
-spot check). You don't need to ask the user about any of that.
+You don't have to do the reading alone. Run helpers in parallel, as often
+as the book needs. **You have full permission to design the setup
+yourself:** how big each batch is, which tool runs which job, and whether
+to add extra passes (a reconcile pass, a third review, a spot check). You
+don't need to ask the user about any of that.
+
+> **At most 4 helpers at once, ACP delegates and subagents together.** More
+> than that runs the machine out of memory and crashes the terminal. This
+> holds however many chapters the book has: a 60-chapter book still runs 4
+> at a time. Never start a 5th while 4 are running, and don't rely on the
+> delegate queue to hold the rest back. Keep the other batches in a to-do
+> list in `progress.md` and start the next one only when one finishes.
 
 Every helper runs **DeepSeek Flash 4.1** (`opencode-go/deepseek-v4.1-flash`),
 the same model as you. ACP delegates inherit your model. For subagents, use
@@ -76,11 +88,12 @@ Use both kinds, together:
 
 | Kind | Tools | Best for |
 | --- | --- | --- |
-| **ACP delegates** | `acp_delegate`, `acp_delegate_wait`, `acp_delegate_cancel`, `acp_delegate_list` | Long background batches: scouting (2.2), labelling (4.1), review (4.3). They run while you keep working; up to 6 at a time, the rest queue. |
+| **ACP delegates** | `acp_delegate`, `acp_delegate_wait`, `acp_delegate_cancel`, `acp_delegate_list` | Long background batches: scouting (2.2), labelling (4.1), review (4.3). They run while you keep working. |
 | **Subagents** | the client's subagent tool (for example pi's `subagent`, with parallel `tasks`) | Short jobs whose answer you need before you go on: settle an alias question, re-check one chapter, compare two readings of a passage. |
 
-When the delegate queue is full, subagents add more parallel capacity. If
-the API starts returning rate-limit errors, run fewer at once.
+Subagents count toward the same limit of 4: if 4 delegates are running,
+don't start a subagent until one finishes. If the API starts returning
+rate-limit errors, run fewer than 4.
 
 **ACP delegate tools:**
 
@@ -96,24 +109,35 @@ the API starts returning rate-limit errors, run fewer at once.
   the bible or any earlier decision. Its brief must say everything: which
   files to read (by path), which chapter IDs it owns, what to write, and
   what to report back.
-- Start a whole wave of delegates first (`async: true`), then collect them
-  one by one. Don't run batches one after another.
-- **Watch every wave until it's done, in the same turn.** After starting a
-  wave, write the `runId`s and their output paths into `progress.md`, then
+- **Each job has a brief file:** `briefs/SCOUT.md` (2.2),
+  `briefs/WORKER.md` (4.1) and `briefs/REVIEWER.md` (4.3). Tell the helper
+  to read its brief file first, then give it only what the brief asks for:
+  the slug, its slice or chapter IDs, and its `ctx/` file. Never hand a
+  helper this whole workflow; it's mostly about your job, not theirs, and
+  it costs memory and attention. Add a line or two of your own only for
+  something this book needs (a trap in its chapters, a POV switch).
+- **Run them as a rolling pool of 4.** Split the job into batches and list
+  them all in `progress.md` as a to-do list. Start the first 4
+  (`async: true`). Each time one finishes, start the next batch from the
+  list straight away, so 4 are always running until the list is empty.
+  Don't wait for all 4 to finish before starting more, and don't run
+  batches one after another.
+- **Watch the pool until it's empty, in the same turn.** Write each
+  `runId` and its output path next to its batch in `progress.md`, then
   loop:
-  1. `acp_delegate_list` to see what's still queued or running.
+  1. `acp_delegate_list` to see which are still running.
   2. For each one that's still running, `acp_delegate_wait` with a
      `timeout` of `240000`. A timeout only means it's still working: loop
      again, don't stop.
   3. As each one finishes, check its output file exists and isn't empty,
-     note it in `progress.md`, and start the next piece of work it
-     unblocks (a fix pass, the next wave, the merge) without waiting for the
-     rest.
-  4. When none are left running, go straight on to the next numbered part.
+     mark the batch done in `progress.md`, and start the next batch from
+     the list (or a retry, or a fix pass it unblocks) in its slot.
+  4. When the list is empty and none are left running, go straight on to
+     the next numbered part.
 
-  While you wait you can do other work that doesn't depend on the wave
-  (start the bible from chapter 1, prepare the next briefs), but come back
-  to the loop; never end the turn with helpers still out.
+  While you wait you can do other work that doesn't depend on the running
+  batches (start the bible from chapter 1, prepare the next briefs), but
+  come back to the loop; never end the turn with helpers still out.
 - **A helper that fails or hangs is yours to fix, not the user's.** If one
   returns an error or an empty or missing file, start a fresh one with the
   same brief. If one is still running after twice its `timeoutMinutes` (or
@@ -141,7 +165,8 @@ the API starts returning rate-limit errors, run fewer at once.
 - **Goal:** the book as clean, editable plain text, and a list of the spots
   XTTS will read wrong.
 - **Needs:** the EPUB.
-- **Done when:** `book.txt` is cleaned, `tts_fixes.md` is written, and you've
+- **Done when:** `book.txt` is cleaned, `text_fixes.md` and `tts_fixes.md` are written, the
+  pronunciation test is rendered, and you've
   stopped at Gate 1.
 
 ## 1.1 Make the clean text
@@ -163,13 +188,73 @@ Clean it, editing `book.txt` in place:
 - **Fix extraction junk:** stray page numbers, a chapter heading printed
   twice, words broken by a hyphen at a line end, footnote markers,
   leftover markup.
-- **Don't change the story.** No rewording, no cuts, no fixing the
-  author's grammar or spelling. Keep every chapter heading. Pronunciation
-  fixes are proposals for the user (see below), not cleaning.
+- **Fix the source's typos and punctuation mistakes** (see "Source
+  mistakes" below). These books are often small-press or self-published and
+  have more of them than usual.
+- **Don't change the story.** No rewording, no cuts, no "improving" the
+  author's style. Keep every chapter heading. Pronunciation fixes are
+  proposals for the user (see 1.2), not cleaning.
 - Don't touch the `=== uNNN ===` lines, and don't add your own sections.
 
 On a big book, split the cleaning across helpers by section, one helper
 per range of sections, each editing only its own range.
+
+### Source mistakes: fix them
+
+Fix plain mistakes in `book.txt` yourself, without asking first. They
+matter for more than looks: a missing or wrong quote mark can make a line of
+dialogue come out in the narrator's voice, or put the narration in a
+character's.
+
+**Fix:**
+- **Misspellings and typos:** "teh", "recieve", "their" for "there",
+  "loose" for "lose", a missing or doubled letter, two words run together
+  ("ofthe") or one split ("some thing" for "something"), a doubled word
+  ("the the").
+- **Quote marks:** a dialogue line that never closes its quote, or never
+  opens one; a closing quote facing the wrong way; straight and curly
+  quotes mixed in the same line; a quote mark left over after the speech
+  ended. Look at the speech around it to decide where the quote really
+  starts and ends.
+- **Other punctuation:** a missing full stop or comma at the end of a
+  sentence or before a closing quote, doubled marks (",," "..", "?." ),
+  a space before a comma or full stop, no space after one, a missing
+  apostrophe in an obvious contraction ("dont", "Im", "youre"), a stray
+  mark in the middle of a word.
+- **Wrong word an editor would catch:** "of" for "have" in narration
+  ("should of"), "your" for "you're", "its"/"it's" mixed up.
+
+**Leave alone:**
+- **Anything said on purpose:** dialect and slang in dialogue ("gonna",
+  "y'all", "ain't", "should of" spoken by a character who talks that way),
+  a character's texting style, a child's or a non-native speaker's
+  mistakes, stutters, made-up words, names and their spellings.
+- **Style:** sentence fragments, run-on sentences, odd but deliberate
+  punctuation, unusual word choices, British vs American spelling.
+- **Anything you'd have to guess at.** If you can't tell what the author
+  meant, or the fix would change the meaning, don't fix it: list it under
+  "Unsure" for the user.
+
+Keep every fix as small as possible: change the mistake, not the sentence
+around it. Never merge or split paragraphs while fixing.
+
+Log every fix in `books/<slug>/text_fixes.md`, grouped by kind, so the user
+can see them and undo any at Gate 1:
+
+```
+## Quote marks (4)
+| # | Where | Before | After |
+| 1 | u007 | ...map, Mom said. | ...map,” Mom said. |
+
+## Unsure (2)
+| # | Where | Text | Question |
+| 1 | u012 | ...the lead pipe... | "lead" or "led"? |
+```
+
+Keep the text columns to a few words around the fix. When the same fix
+repeats ("dont" → "don't" 31 times), list it once with a count. On a big
+book, the cleaning helpers log their own sections and you merge the
+lists.
 
 ## 1.2 XTTS quirks: find them, propose fixes
 
@@ -217,14 +302,52 @@ Keep the "Text" column to a few words around the problem. When the same
 fix applies everywhere (every "Prof." → "Professor"), list it once with a
 count.
 
+## 1.3 Pronunciation test
+
+The user should hear the fixes, not just read them. Write
+`books/<slug>/pron_test.json` with one short line per proposed respelling
+or fix, grouped like `tts_fixes.md`. For each one, give the user both
+versions to compare: the line as written, then the line with the fix.
+
+```json
+{"language": "en", "groups": [
+ {"title": "Respelled names", "lines": [
+  {"label": "Aris, as written", "text": "I told Aris to wait outside."},
+  {"label": "Aris -> AIR-iss", "text": "I told AIR-iss to wait outside."}]},
+ {"title": "Years", "lines": [
+  {"label": "1995 -> nineteen ninety-five", "text": "She left in nineteen ninety-five."}]}
+]}
+```
+
+Make each line a short sentence of your own around the word, not a quote
+from the book. Group book-wide fixes once, not once per place. Then build
+and render it:
+
+```bash
+python3 plan_tools.py prontest books/<slug> --voice "<voice name>"
+./render.sh books/<slug>/pron_test/plan.json --out books/<slug>/pron_test --no-blend --yes --plain
+```
+
+Use the voice you expect to give the Narrator (`ls voices/`); once
+`book.json` exists, `--voice` can be left out. You get one `NNN.wav` per
+group in `pron_test/`, with `INDEX.md` listing the lines in each. Run it in
+the background and watch it like a helper; it takes a minute or two. This
+is the only render you ever start.
+
 ## Gate 1: the user edits the text
 
 **STOP and tell the user:**
 
 - the path to `book.txt`, and its section, paragraph and word counts;
 - each section you deleted, and what kinds of junk you fixed;
+- how many source mistakes you fixed per kind, pointing them to
+  `text_fixes.md`, plus the "Unsure" ones for them to answer;
 - the quirks you found, with counts per problem, pointing them to
-  `tts_fixes.md`.
+  `tts_fixes.md`;
+- the pronunciation test in `pron_test/`, with `INDEX.md` to follow along.
+
+If the user changes a fix, update `pron_test.json` and run 1.3 again so
+they can hear the new version.
 
 The user answers per group or per line: apply, skip, or a different fix.
 Apply exactly what they approve, to `book.txt`, and nothing else. Show
@@ -240,7 +363,7 @@ Phase 2, read ahead or send out scouts until they say go, however long it takes.
 - **Goal:** the whole book read, and everything learned written into
   `bible.md`.
 - **Needs:** the user's "go" at Gate 1.
-- **Done when:** `extract/` exists, every slice has a scout report in
+- **Done when:** `extract/` exists, the whole book is covered by reports in
   `scout/`, and `bible.md` covers every item in 2.3. There is no gate here:
   go straight on to Phase 3.
 
@@ -253,7 +376,7 @@ python3 plan_tools.py extract books/<slug>/book.txt books/<slug>
 ```
 
 From here on `book.txt` is the book. Don't go back to the EPUB, and don't
-edit `book.txt` yourself. If a helper spots another XTTS quirk later,
+edit `book.txt` yourself, except to fix source mistakes (below). If a helper spots another XTTS quirk later,
 add it to `tts_fixes.md` and ask the user about it at Gate 3 (4.4). If they
 approve, edit `book.txt`, re-extract and redo that chapter. If the user edits it again later, run this step
 again. Paragraph IDs can shift in the sections they changed, so redo those
@@ -270,35 +393,47 @@ u007p0012 | “Hand me the map,” Mom said.
 - Scene-break lines (`* * *`) are already removed.
 - `extract/index.json` lists the sections with word counts and first lines.
 
-## 2.2 Scout the book (always)
+**Source mistakes found later.** Scouts, workers and reviewers will spot
+mistakes the cleaning missed. Every helper brief says: report each source
+mistake you find (paragraph ID, before, after) under "Source mistakes" in
+your reply, and don't fix it in your own files. You apply them, using the
+same fix / leave alone rules as 1.1:
+- **Before any chapter is labelled** (Phase 2 and 3): fix them in
+  `book.txt` and re-run `extract`. Fixing words inside a paragraph doesn't
+  change any paragraph IDs.
+- **After a chapter is labelled** (Phase 4 and 5): fix `book.txt`, re-run
+  `extract`, then change the same words in that chapter's
+  `segments/<id>.json` and run `verify --chapter <id>` until it's clean. If
+  the fix changes who speaks (a quote mark that moves a line out of the
+  narration), relabel those lines too.
+- Collect them and apply them in batches (every few batches), not
+  one at a time.
+- Add each one to `text_fixes.md`, and put the ones you were unsure about
+  in `questions.md` (4.4) instead of fixing them.
 
-Nothing gets labelled until the whole book has been read, and **scouts always
-do the reading**, whatever the book's size. Reading a whole novel yourself
-fills your context before the labelling even starts; scouts read in parallel
-and finish sooner. You still know the book first-hand: you read chapter 1 in
-full and every passage the scouts flag (item 3 below).
+## 2.2 Scout the book
+
+Nothing gets labelled until the whole book has been read. **Scouts do the
+reading for any book over 40,000 words** (the total in
+`extract/index.json`). Reading a whole novel yourself fills your context
+before the labelling even starts; scouts read in parallel and finish
+sooner. You still know the book first-hand: you read chapter 1 in full and
+every passage the scouts flag (item 3 below).
+
+**Under 40,000 words** (a novella or short story), skip the scouts: read
+the whole book yourself, write what a scout would (see `briefs/SCOUT.md`)
+into `scout/all.md` as you go, and then write the bible from it.
 
 1. **Slice the book.** Check the word counts in `extract/index.json`. Cut
    the chapters, in reading order, into slices of roughly 20–30k words.
-   Never split a chapter across slices. A short book still gets at least 2
-   slices.
+   Never split a chapter across slices.
 2. **Send out scouts.** Give each slice to its own helper (ACP delegates
-   with `agent: "worker"`; add subagents if you want more running at once).
-   Each brief includes this file's 2.2 and 2.3, the slice's extract file paths,
-   and the output path `books/<slug>/scout/<first unit>-<last unit>.md`.
-   Each scout reads its slice in full and writes, citing paragraph IDs
-   throughout:
-   - **Per chapter:** narration mode (first person, third person, possibly
-     deep POV), the POV character, any mid-chapter POV switch, and any POV
-     header line.
-   - **Characters met:** every name and alias exactly as the text uses it,
-     gender and age clues, relationships, speech habits, the first
-     paragraph where they speak, and roughly how many lines they have.
-   - **Unnamed speakers** (`the bartender`, `a girl in the hall`).
-   - **Deep-POV evidence:** a few paragraphs where narration slides into a
-     character's own thoughts, and a few where it doesn't.
-   - **Traps** in the 2.3 list, and **open questions** ("is 'the boss'
-     in u031p0040 Logan?").
+   with `agent: "worker"`, 4 at a time as a rolling pool; see Helpers).
+   Each brief is `briefs/SCOUT.md`, plus the slug, the slice's extract file
+   paths and the output path `books/<slug>/scout/<first unit>-<last unit>.md`.
+   The brief file says what to read and what the report covers: chapters,
+   characters, unnamed speakers, deep-POV evidence, traps, open questions,
+   source mistakes and XTTS quirks, all with paragraph IDs.
 3. **Merge them yourself.** Read `extract/index.json`, every scout report,
    the first chapter in full, and every paragraph a scout cites as a trap
    or open question. Merge the reports into `bible.md`:
@@ -361,7 +496,8 @@ vocabulary and opinions change with whose chapter it is.
 **Rules:**
 1. **Never carve free indirect thought out sentence by sentence.** Splitting
    every opinionated sentence away from the narrator produces constant
-   mid-paragraph voice switches that sound broken. Rule 7 still applies:
+   mid-paragraph voice switches that sound broken. Rule 7 (in
+   `briefs/LABELLING_RULES.md`) still applies:
    first-person thoughts and direct present-tense ones go to the thinker,
    and third-person ones stay with the narrator.
 2. **Tell the user at Gate 2** that the book is deep POV, with 2–3
@@ -389,29 +525,16 @@ vocabulary and opinions change with whose chapter it is.
 ## 2.5 POV changes (who says the POV character's name)
 
 Many books mark whose point of view a chapter or section is in with a
-header. Examples: a line `DANIEL`, `Mara`, `Chapter 3 - Daniel`, or a name
-over a scene break. **These are spoken, never skipped.** Label the name part
-`POV_HEADER`. If the name shares a paragraph with the chapter number, split
-the paragraph: `["u012p0000", "SKIP", "Chapter 3 -"], ["u012p0000",
-"POV_HEADER", "Daniel"]`. The chapter number is already spoken by `announce`.
+header: a line `DANIEL`, `Mara`, `Chapter 3 - Daniel`, or a name over a
+scene break. These are **spoken, never skipped**, and labelled
+`POV_HEADER`. Who says them follows the book's `pov_mode`:
 
-Who says it depends on the book's `pov_mode`, and `build` does this
-automatically:
+- `deep_pov`: the POV character says their own name.
+- `third_person` (including deep POV option B) and `first_person`: the
+  `Narrator` says it.
 
-| `pov_mode` | Kind of book | Who says the POV header |
-|---|---|---|
-| `deep_pov` | third person, deep POV, option A | **the POV character themself** ("Daniel" in Daniel's voice) |
-| `third_person` | normal third person, or deep POV option B | `Narrator` |
-| `first_person` | first person | `Narrator` |
-
-- **In `deep_pov` books, put the `narrated_by_changes` entry on the header
-  paragraph itself,** so the header is already in the new POV character's
-  voice. `verify` errors if a header names Mara but the voice there is
-  still Daniel's.
-- Set `pov_mode` once for the book. A chapter can override it with its own
-  `"pov_mode"`, e.g. an omniscient prologue in a deep-POV book.
-- `verify` warns (`POV_HEADER_NAME`) if a POV header names nobody in the
-  cast or aliases.
+How to label them, and where the `narrated_by_changes` entry goes, is in
+`briefs/LABELLING_RULES.md` ("POV headers").
 
 # Phase 3 · Cast
 
@@ -420,6 +543,25 @@ automatically:
 - **Done when:** `book.json` is written, `cast_voices/` matches it, and the
   user has given the go-ahead at Gate 2.
 
+## 3.0 Series: reuse the earlier books' cast
+
+Before casting, check whether this book shares a series or characters with
+a book already done: look through `books/*/book.json` for the same
+`series`, the same author, or several of the same character names. If you
+can't tell, cast it as a standalone and mention the possible link at
+Gate 2.
+
+If it does, start from the most recent earlier book in the series:
+- **Returning characters keep their voice and aliases.** Copy their `cast`
+  and `aliases` entries as they are, and add any new aliases this book
+  uses. Mark them as returning in `bible.md`.
+- **The Narrator keeps the same voice too**, unless this book's narration
+  mode is different (first person this time, or a different POV
+  character).
+- Cast only the new characters fresh, and avoid giving them a voice a
+  returning character already uses.
+- Set the same `series` name in this book's `book.json`.
+
 ## 3.1 Write `books/<slug>/book.json`
 
 ```json
@@ -427,6 +569,7 @@ automatically:
   "title": "Book Title",
   "author": "Author Name",
   "language": "en",
+  "series": "Series Name",
   "pov_mode": "third_person",
   "announcement": "This is, Book Title. By Author Name. Narrated by <narrator names> with a Full Cast.",
   "outro": "You were listening to, Book Title. By Author Name.",
@@ -452,6 +595,8 @@ automatically:
   ever use must be a key here, `Narrator` included. Several minor characters
   may share one voice. **Propose** voices by gender and age. Voice choice
   is the user's call; see Gate 2 below.
+- **`series`** is the series name, if the book is part of one (see 3.0).
+  Leave it out for a standalone.
 - **`main`** lists the main characters: the POV characters and the other
   leads. It's usually 2–4 names. The user confirms it at Gate 2. Gate 3 only asks the user about
   lines involving these characters.
@@ -503,7 +648,15 @@ file in `voices/`. Fix the name and run it again.
 
 - the path to `cast_voices/`;
 - the cast table: character, voice, a one-line description (gender, age,
-  role) and roughly how many lines they have;
+  role) and roughly how many lines they have. Keep it easy to get through:
+  - **Returning characters** from an earlier book in the series go in one
+    short table of their own: name, voice, "same as <book>". The user only
+    needs to look at them if they want a change.
+  - **A big cast (over 15 characters):** list the Narrator, the `main`
+    characters and anyone with 20 or more lines one per row. Group the
+    rest by voice, one row per voice: "Waiter, Guard 1, Clerk: <voice>,
+    minor male adults, 3–8 lines each". The user can approve a whole group
+    at once or split one out;
 - the `main` list;
 - the `announcement` and `outro` lines;
 - for a deep POV book, the A/B choice from 2.4 with 2–3 example paragraphs.
@@ -519,37 +672,35 @@ helper, until they do.
 - **Goal:** every line of every chapter has the right speaker, checked twice.
 - **Needs:** the user's go-ahead at Gate 2.
 - **Done when:** every chapter shows `0 errors, 0 unreviewed warnings`,
-  every chapter has had an independent review, and the user has answered
+  every chapter has had a blind review, and the user has answered
   `questions.md` at Gate 3.
 
 ## 4.1 Label the chapters (parallel helpers)
 
 Once the user has approved the cast, split the chapters into batches of
 about 3–5 and hand each batch to its own **worker** delegate
-(`acp_delegate`, `agent: "worker"`, `async: true`). Start all of them, then
-collect each one with `acp_delegate_wait`. Subagents can take batches too
-when you want more running at once; they follow the same rules.
+(`acp_delegate`, `agent: "worker"`, `async: true`). Run them as the
+rolling pool of 4 from Helpers: start 4, and start the next batch each time
+one comes back. Subagents can take batches too, but they count toward the
+same 4.
 
-Each brief includes (files by path, since the helper starts with no context):
-- this file
-- `bible.md` and `book.json`
+First write the scene-continuity files, the last 30 paragraphs of the
+chapter before each one:
+
+```bash
+python3 plan_tools.py context books/<slug>
+```
+
+Each worker's brief is `briefs/WORKER.md` (it covers what to read, what to
+write and what to report), plus:
+- the slug
 - its chapter IDs
-- the last ~30 paragraphs of the chapter before its batch, for scene
-  continuity
+- the `ctx/<id>-prev.txt` file for the first chapter of its batch
 
-Each worker reads its chapters in full and writes **only** its own
-`segments/<id>.json` files. Two workers never share a chapter. It runs
-`verify --chapter <id>` on each chapter until there are 0 errors. Its final
-reply reports:
-- every warning, with its decision
-- any new character it needed
-
-Workers never edit `book.json` or `bible.md`. A worker that meets a
-speaker who isn't in the cast still labels them with a clear name, and lists
-them in its report. The resulting "speaker not in cast" errors are the only
-ones it may leave. When the results come back, you, the main agent, add the
-new characters to the cast, then re-run `verify --chapter <id>` on those
-chapters yourself.
+Don't paste this whole workflow into a brief: the worker only needs its
+brief file and the files it names. Two workers never share a chapter. Each
+writes only its own `segments/<id>.json`, and leaves "speaker not in cast"
+errors for any new character it had to name; you add those (below).
 
 **Late additions.** The user approved the cast at Gate 2, so every character
 added after that is unapproved:
@@ -562,231 +713,78 @@ added after that is unapproved:
   has.
 - Don't stop labelling to ask. The user reviews these at Gate 3.
 
-For each chapter write `books/<slug>/segments/<id>.json`, one segment per
-line:
-
-```json
-{"segments": [
-["u007p0000", "SKIP", "Chapter 1"],
-["u007p0001", "Ruth", "“Hand me the map,”"],
-["u007p0001", "NARRATION", "Mom said."],
-["u007p0002", "NARRATION", "Daniel stared out the window."],
-["u007p0002", "Daniel", "*Not this again.*"],
-["u007p0003", "Daniel", "“Where are we going?”"],
-["u007p0003", "NARRATION", "he asked."]
-]}
-```
-
-Each segment is `[paragraph_id, speaker, text]`.
-
-- **Text is copied exactly from the extract**, in order, covering every
-  paragraph completely: every word and every punctuation mark. You may keep
-  or drop the quote marks and `*`. Nothing else may change. Don't fix typos
-  and don't add words.
-- **speaker** is one of:
-  - a cast name
-  - `NARRATION`: prose, voiced by `narrated_by`
-  - `POV_HEADER`: a POV marker, spoken aloud (see 2.5)
-  - `SKIP`: not spoken. Chapter headings that `announce` already covers,
-    epigraph credits.
-- **Split each paragraph** at every switch between quoted speech and prose.
-  The dialogue tag (`he asked.`, `Mom said.`) is always `NARRATION`,
-  including in first-person chapters, where `NARRATION` becomes the POV voice
-  automatically.
-
-### Attribution rules (this is the whole job)
-
-1. **An explicit tag wins**: `"…," Mom said` belongs to Mom (Ruth, via
-   aliases). Resolve pronoun tags (`she said`) from who is in the scene
-   and who acted last.
-2. **An action beat in the same paragraph** names the speaker:
-   `Ruth smiled. "Why not?"` belongs to Ruth. The character who acts in a
-   paragraph normally speaks in that paragraph.
-3. **Untagged back-and-forth**: go back to the last tagged line and
-   alternate A/B/A/B, counting every paragraph. Then check every line on
-   content: does this person know this, want this, talk like this? If
-   content contradicts the count, the content wins. Re-check the run.
-4. **Vocatives**: `"Daniel, stop."` is never said by Daniel. A name inside the
-   quote is the person being *addressed*.
-5. **First person**: `"Fine," I said` is the POV character. In first-person
-   chapters "I" in a tag is always the `narrated_by` character for that
-   paragraph.
-6. **New paragraph means new speaker**, unless the previous quote did not
-   close (`"…` with no closing mark): then the same speaker continues across
-   paragraphs.
-7. **Inner thoughts: the grammatical person decides who says them.** This
-   matters in **third-person** chapters. Ask one question: **how does the
-   thinker refer to themself inside the thought?**
-   - **First person (`I`, `me`, `my`, `we`) → the thinker says it.** Split
-     it out of the narration like dialogue, and leave the tag (`she
-     thought.`) as `NARRATION`.
-   - **Third person (`she`, `he`, their own name) → the narrator says it.**
-     It's written in the narrator's grammar, so it stays `NARRATION`, even
-     when it's in italics and even with a `she thought` tag.
-   - **No self-reference at all:** judge by the voice.
-     - Present tense, a direct question or exclamation, or the thinker
-       talking to someone or to themself as `you` → the thinker says it.
-     - Past tense in the narrator's style → `NARRATION`.
-   - Italics don't decide it. They only tell you it might be a thought.
-   - **Examples** (Mia is the POV character of a third-person chapter):
-
-     | Text | Segments |
-     | --- | --- |
-     | `*I can't do this.*` | `Mia`: the whole line |
-     | `*She couldn't do this.*` | `NARRATION`: the whole line |
-     | `I should never have come, Mia thought.` | `Mia`: `I should never have come,` / `NARRATION`: `Mia thought.` |
-     | `She should never have come, Mia thought.` | `NARRATION`: one segment |
-     | `Mia stared at the door. *He's not coming back.* She turned away.` | `NARRATION`: `Mia stared at the door.` / `Mia`: `*He's not coming back.*` / `NARRATION`: `She turned away.` |
-     | `*Why is he here?*` | `Mia`: present tense, a direct question |
-     | `Why had he come back?` | `NARRATION`: past tense, the narrator's voice |
-     | `*You idiot, Mia. You absolute idiot.*` | `Mia`: talking to herself |
-     | `*Not again.*` | `Mia`: an exclamation in her own voice |
-     | `*Mia was going to kill him.*` | `NARRATION`: third person, even in italics |
-     | `*God, I hate him. She'd never admit it, though.*` | `Mia`: `*God, I hate him.` / `NARRATION`: `She'd never admit it, though.*` |
-     | `She wondered whether he'd noticed.` | `NARRATION`: reported thought |
-
-     A thought that switches person partway gets split at the switch, as
-     in the last-but-one example. Asterisks don't count in `verify`, so a
-     split can fall inside the italics.
-   - **What else stays `NARRATION`:** italics that aren't thought, like
-     emphasis on one word inside a sentence (`she was *not* going`),
-     titles, foreign words, sounds and sign text.
-   - **Telepathy and mind-speech** (common in paranormal books) is dialogue.
-     It goes to the sender.
-   - **First-person chapters, and `deep_pov` chapters with POV voices:** the
-     POV character's own thoughts can stay in `NARRATION` whatever their
-     person, because the narration is already in their voice. Another
-     character's first-person thoughts (shared through telepathy, read in
-     a letter) still go to that character.
-   - **Many books don't use italics for thoughts at all.** The same test
-     applies to plain text: in a third-person chapter, `I` / `me` / `my`
-     outside quotes is almost always a first-person thought, so it goes to
-     the thinker.
-   - **Unsure whether something is a thought, whose it is, or which side of
-     the line it falls on?** Ask the user at Gate 3.
-8. **Texts, letters, notes, signs** are voiced by whoever wrote them. Read
-   aloud by someone else? Then by the reader.
-9. **Phone calls, flashbacks, dreams**: the actual speaker, even when absent
-   from the scene.
-10. **The narrator never speaks quoted dialogue.** This is a common mistake
-    in third-person books. `NARRATION` is only the prose *outside* the
-    quotes: description, action and tags.
-    - Anything a character says out loud inside quote marks goes to that
-      character, **even** when the paragraph is mostly narration and the
-      quote is short (`He grunted a "Fine" and left.` gives `"Fine"` to him).
-    - Split it out; never leave it inside the narration segment.
-    - The only quoted text that stays `NARRATION` is text nobody speaks:
-      - scare quotes (`her "boyfriend"`)
-      - titles (`"Romeo and Juliet"`)
-      - a word mentioned as a word (`the word "home"`)
-      - signs and labels that nobody reads aloud
-    - The reverse mistake: description that mentions speech without quoting
-      it (`She told him to leave.`) is `NARRATION`, not her line.
-    - When you can't tell whether a quote is spoken or narration, it goes
-      to the user at Gate 3.
-11. **Never guess.** If two readings stay possible after rules 1–10, read the
-    surrounding page again. Choose the one the following lines confirm (who
-    answers what, who reacts). Write the reason into `reviewed.json` (see
-    4.2).
-
-Keep `bible.md` open while labelling. If a new character appears, add them
-to the bible, `cast` and `aliases` first.
+The segment format, the attribution rules, POV headers and every `verify`
+warning are in **`briefs/LABELLING_RULES.md`**. Read it in full before you
+start Phase 4: the workers and the blind reviewers follow the same file, and
+you judge their work by it.
 
 ## 4.2 Verify each chapter until clean
+
+When a worker's batch comes back, run `verify --chapter <id>` on each of
+its chapters yourself:
 
 ```bash
 python3 plan_tools.py verify books/<slug> --chapter 001
 ```
 
-- **ERROR** means the text doesn't match the source, a paragraph is missing,
-  a speaker isn't in the cast, and so on. Fix it. Errors block the build.
-- **WARN** means a suspicious label. Each one needs a decision:
-  - `QUOTE_IN_NARRATION`: dialogue left inside prose.
-  - `THOUGHT_IN_NARRATION`: italic text inside the narrator's prose in a
-    third-person chapter. Apply rule 7: a first-person or direct thought
-    goes to the thinker. A third-person thought, emphasis, a title, a
-    foreign word or a sound stays, with that reason in `reviewed.json`.
-  - `FIRST_PERSON_IN_NARRATION`: the narrator says I/me/my in a
-    third-person chapter. Almost always a thought or a letter left in
-    narration.
-  - `THOUGHT_TAG_IN_NARRATION`: `she thought` / `he wondered` is still
-    joined to the thought before it. Split the thought out for the thinker,
-    unless it's a third-person thought (rule 7). Then it stays, with that
-    reason in `reviewed.json`.
-  - `QUOTE_IN_DIALOGUE`: two quotes merged into one segment.
-  - `TAG_IN_DIALOGUE`: a tag swallowed into speech.
-  - `SELF_ADDRESS`: a speaker calls themselves by name (rule 4).
-  - `SAME_SPEAKER_RUN`: same speaker in consecutive untagged paragraphs
-    (rule 6).
-  - `MULTI_SPEAKER_PARA`, `SINGLE_LINE_SPEAKER`, `NOT_IN_ANY_CHAPTER`,
-    `UNUSED_CAST`.
+- Copy each warning the worker kept, with its reason, into
+  `books/<slug>/reviewed.json` (format in `briefs/LABELLING_RULES.md`),
+  after checking the reason holds.
+- Add its new characters (see Late additions above), then fix any warning
+  or error that's left.
+- Add its source mistakes to your batch of fixes (2.1) and its unsure lines
+  to your list for 4.4.
 
-  Re-read the passage. Either fix the label, or, if it is correct, add the
-  code and ID to `books/<slug>/reviewed.json` with a one-line reason:
+A chapter is done with 4.2 when verify shows `0 errors, 0 unreviewed
+warnings`.
 
-```json
-{
-  "SAME_SPEAKER_RUN:u007p0044": "Daniel keeps talking; Ruth only nods in p0043",
-  "NOT_IN_ANY_CHAPTER:u000": "copyright page"
-}
-```
+## 4.3 Blind review (second check, parallel helpers)
 
-Don't move to the next chapter until its verify shows `0 errors, 0
-unreviewed warnings`.
+Every chapter is labelled a second time by a **blind reviewer**: a fresh
+helper that never sees the first labels. It labels the chapter from scratch
+into `blind/<id>.json`, and `plan_tools.py compare` lists every line where
+the two readings disagree. A reviewer that reads the first labels mostly
+agrees with them; a blind one actually checks.
 
-## 4.3 Independent review (second check, parallel helpers)
+1. **Send out reviewers** (`acp_delegate`, `agent: "reviewer"`,
+   `async: true`, `timeoutMinutes: 75`), in the rolling pool of 4. Each
+   brief is `briefs/REVIEWER.md`, plus the slug, its chapter IDs and their
+   `ctx/` files. Batch the chapters as in 4.1, but never give a reviewer a
+   chapter it labelled.
+2. **Compare** each chapter as soon as its reviewer is back:
 
-Every chapter is checked a second time by a **fresh reviewer**: an ACP
-delegate (`acp_delegate`, `agent: "reviewer"`, `async: true`) or a subagent,
-never the worker that labelled it. It doesn't see the labeller's reasoning, only the result.
-Reviewers read whole chapters slowly, so give them a long limit (e.g.
-`timeoutMinutes: 75`).
+   ```bash
+   python3 plan_tools.py compare books/<slug> --chapter 007
+   ```
 
-1. Each reviewer's brief names this file, `bible.md`, `book.json`, its chapter
-   IDs, and their `segments/<id>.json`. Batch the chapters the same way as
-   4.1, with different pairings.
-2. The reviewer reads the source chapter in full from `extract/` and
-   re-decides the speaker of **every** dialogue line and thought on its
-   own, using the attribution rules. It must not trust the existing labels.
-   Pay most attention to:
-   - untagged back-and-forth runs
-   - pronoun-only tags (`she said` with two women present)
-   - phone calls, texts and flashbacks
-   - first-person `I said` in chapters where the POV switches
-   - quoted dialogue left inside `NARRATION`, especially in third-person
-     chapters (rule 10). Check every narration segment that contains a quote
-     mark.
-   - inner thoughts on the wrong side of rule 7 in third-person chapters:
-     first-person or direct thoughts left with the narrator, and
-     third-person thoughts given to a character. Check every narration
-     segment that contains `*italics*`, `I`/`me`/`my`, or a tag like `she
-     thought` / `he wondered`, and every character segment that is a
-     thought. Also read for un-tagged, un-italic thoughts that only the
-     meaning gives away.
-3. The reviewer **does not edit** segments. It writes
-   `books/<slug>/review/<id>.json`, listing only the lines where it
-   disagrees:
-
-```json
-[
-  {"p": "u007p0044", "text": "“You can't be serious.”", "labelled": "Daniel", "should_be": "Ruth",
-   "why": "Daniel asked the question in p0043; Ruth answers, and p0045 has Daniel react to her"}
-]
-```
-
-4. You, the main agent, go through every disagreement:
-   - Re-read the passage yourself.
-   - Decide who is right, and fix `segments/<id>.json` if the reviewer is.
+   It writes `books/<slug>/review/<id>.json`: one row per disagreement,
+   with the paragraph, the labelled text, `labelled`, `should_be` (the
+   reviewer's speaker), the reviewer's split (`blind_text`) and its reason
+   from `blind/<id>.notes.json`. It compares who is actually heard, so a
+   different split, or `NARRATION` vs the POV character in a first-person
+   chapter, isn't a disagreement. If it says the text differs in a
+   paragraph, the reviewer's text is wrong there. Run
+   `verify --chapter <id> --dir blind`, correct only the text in
+   `blind/<id>.json` (never its speakers) until it's clean, then compare
+   again. If it's badly broken, send the chapter to a fresh reviewer.
+3. **Settle every disagreement yourself:**
+   - Re-read the passage, with a few paragraphs before and after.
+   - Decide who is right. If it's the reviewer, fix `segments/<id>.json`.
    - If you keep the original label, add a `reviewed.json` entry with the
      reason, keyed `REVIEW:<p>`.
-5. **Third pass, only where needed.** If a chapter had more than ~3 real
-   fixes, the labeller missed something systematic. Send that chapter to
-   another fresh reviewer and repeat until a review comes back with no
-   valid disagreements.
-6. Run `verify --chapter <id>` again on every chapter you changed.
+   - When you can't decide, send the passage to a subagent for a third
+     reading, with the exact paragraph range and both options. If it
+     involves a main character and is still unclear, it goes in
+     `questions.md` (4.4).
+4. **Look for patterns.** When several disagreements in a batch are the same
+   mistake (one character's thoughts always left in narration, a run always
+   off by one), check the labeller's other chapters for it too.
+5. Run `verify --chapter <id>` again on every chapter you changed.
 
-Never skip this step, even when 4.1 looked clean. Most wrong-speaker
-bugs survive a single pass.
+Never skip this step, even when 4.1 looked clean, and never let a reviewer
+see `segments/`. Most wrong-speaker bugs survive a single reading. A
+chapter with zero disagreements is fine; a whole book with zero is a sign
+a reviewer saw the labels.
 
 ## 4.4 Collect the questions
 
@@ -920,8 +918,10 @@ over 80% of the book.
 
   Give one or two real examples each, with paragraph IDs.
 - **What the review changed.** Disagreements per chapter, how many were real
-  fixes, and which chapters needed a third pass.
+  fixes, which ones went to a third reading, and any pattern you found.
 - **The user's answers at Gate 3,** and what they changed.
+- **Source mistakes fixed,** counts per kind from `text_fixes.md`, split
+  into the ones fixed while cleaning and the ones the helpers found later.
 - **Remaining risks.** Any spot you would still double-check by listening,
   with chapter and paragraph ID. If there are none, say so.
 
@@ -941,10 +941,11 @@ themselves:
 
 - The main agent stays in charge: it owns `book.json`, `bible.md`,
   `reviewed.json` and every final decision. In Phase 2 the scouts do the
-  reading; it reads their reports, chapter 1 and the passages they flag. Helpers do the chapter-by-chapter reading in 4.1 and
-  4.3.
-- Workers and reviewers each re-read only their own chapters,
-  plus the end of the previous chapter for scene continuity.
+  reading; it reads their reports, chapter 1 and the passages they flag.
+  Helpers do the chapter-by-chapter reading in 4.1 and 4.3.
+- Helpers read their brief file, not this workflow. Workers and reviewers
+  each read only their own chapters, plus the `ctx/` file for scene
+  continuity.
 - Never let two helpers write the same file.
 - Write each chapter file in one go, then run verify. Fix everything in one
   edit pass, then verify again.
