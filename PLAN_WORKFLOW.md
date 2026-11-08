@@ -17,6 +17,16 @@ Run everything from the repo root (the folder containing `plan_tools.py`).
 The work runs in **five phases**. Each phase ends at a **gate**, where you
 stop and the user decides. Never cross a gate on your own.
 
+> **Only stop at a gate.** The four gates and a real blocker (a missing
+> file, a tool that won't run, a question only the user can answer) are the
+> only reasons to end your turn and wait for the user. Everything else you
+> carry on with yourself: finishing a part, a wave of helpers coming back,
+> a `verify` that fails, a review that finds errors. Never end your turn
+> with "the delegates are running, I'll continue when they finish". Nothing
+> wakes you up when they finish, so you'd sit there until the user notices.
+> While helpers run, stay in the watch loop below and keep going as soon as
+> they're done.
+
 | Phase | What you do | Gate: you stop until… |
 | --- | --- | --- |
 | **1 · Text** | EPUB → cleaned `book.txt`, plus `tts_fixes.md` | **Gate 1:** the user has edited `book.txt`, answered the fixes and says "go" |
@@ -88,6 +98,32 @@ the API starts returning rate-limit errors, run fewer at once.
   what to report back.
 - Start a whole wave of delegates first (`async: true`), then collect them
   one by one. Don't run batches one after another.
+- **Watch every wave until it's done, in the same turn.** After starting a
+  wave, write the `runId`s and their output paths into `progress.md`, then
+  loop:
+  1. `acp_delegate_list` to see what's still queued or running.
+  2. For each one that's still running, `acp_delegate_wait` with a
+     `timeout` of `240000`. A timeout only means it's still working: loop
+     again, don't stop.
+  3. As each one finishes, check its output file exists and isn't empty,
+     note it in `progress.md`, and start the next piece of work it
+     unblocks (a fix pass, the next wave, the merge) without waiting for the
+     rest.
+  4. When none are left running, go straight on to the next numbered part.
+
+  While you wait you can do other work that doesn't depend on the wave
+  (start the bible from chapter 1, prepare the next briefs), but come back
+  to the loop; never end the turn with helpers still out.
+- **A helper that fails or hangs is yours to fix, not the user's.** If one
+  returns an error or an empty or missing file, start a fresh one with the
+  same brief. If one is still running after twice its `timeoutMinutes` (or
+  40 minutes when none was set), `acp_delegate_cancel` it and start a fresh
+  one. After the second failure on the same batch, do the batch yourself
+  or split it smaller. Only go to the user if the tools themselves stop
+  working.
+- **Resuming after a break:** if `progress.md` lists `runId`s, run
+  `acp_delegate_list` first. Collect what finished, and restart anything
+  that's missing from the list and has no output file.
 - You can't message a helper while it runs. Anything it needs has to be in
   the brief; anything you learn later goes in a fix pass or a new helper.
 - Helpers never write `book.json`, `bible.md` or `reviewed.json`. Those are
