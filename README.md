@@ -161,6 +161,9 @@ Put the EPUB in `sources/` (git ignores it). Then hand the book to
 > Read every line and assign the correct speaker; do not use regex, heuristics,
 > or alternating-turn guessing.
 
+The agent loads [`AGENTS.md`](AGENTS.md) by itself: the repo-wide rules, and
+which file to read for which job.
+
 It stops once to have you approve the cast and voices, may ask about a few
 unclear lines, and ends with a report on who speaks how much.
 See [🧠 Planning a book](#-planning-a-book).
@@ -349,6 +352,7 @@ For best results, use 30–60 s of clean, solo speech with no music.
 full-cast-audiobooks/
 ├── 🎬 render.sh              launcher: dashboard, resume, auto-restart
 ├── 🔊 render_engine.py       XTTS-v2 renderer behind render.sh
+├── 🤖 AGENTS.md              rules every agent loads, and which doc to read
 ├── 🧠 PLAN_WORKFLOW.md       how the model turns a book into plan.json
 ├── 📝 briefs/                short briefs for the scout, worker and reviewer helpers
 ├── 🛠️ plan_tools.py          totext · extract · castvoices · verify · context · compare · prontest · build · stats

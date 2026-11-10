@@ -939,17 +939,10 @@ themselves:
 
 ## Efficiency notes
 
-- The main agent stays in charge: it owns `book.json`, `bible.md`,
-  `reviewed.json` and every final decision. In Phase 2 the scouts do the
-  reading; it reads their reports, chapter 1 and the passages they flag.
-  Helpers do the chapter-by-chapter reading in 4.1 and 4.3.
-- Helpers read their brief file, not this workflow. Workers and reviewers
-  each read only their own chapters, plus the `ctx/` file for scene
-  continuity.
-- Never let two helpers write the same file.
+- In Phase 2 the scouts do the reading; you read their reports, chapter 1
+  and the passages they flag. Helpers do the chapter-by-chapter reading in
+  4.1 and 4.3. (Who owns which file, and what helpers read: see Helpers above.)
 - Write each chapter file in one go, then run verify. Fix everything in one
   edit pass, then verify again.
-- Don't print whole extract files back into the chat. Read them with your
-  file tools.
-- Don't edit `plan_tools.py`, `render.sh` or `render_engine.py`. If a tool
-  is wrong, stop and report it.
+- The repo-wide rules (no printing book text, no editing the tools,
+  Python, git) are in `AGENTS.md`.
