@@ -5,7 +5,7 @@ For each narrator in voices_mainstream.json:
   - query Audible catalog filtered by narrator
   - prefer solo-narrated (or first-narrated) unabridged English books
   - download up to 3 five-minute samples to voices/raw/<Name>/
-  - produce one 60s normalized primary ref: voices/<Name>.mp3
+  - produce one 60s normalized primary ref: voices/new/<Name>.mp3
   - produce 60s alternates: voices/alt/<Name>/NN - <title>.mp3
   - write voices/voice_catalog.json
 """
@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parent
 VOICES = ROOT / "voices"
 RAW = VOICES / "raw"
 ALT = VOICES / "alt"
+PRIMARY = VOICES / "new"
 NAMES = json.loads((ROOT / "voices_mainstream.json").read_text(encoding="utf-8"))
 CACHE = Path("/tmp/audible_search.json")
 MAX_SAMPLES = 3
@@ -147,6 +148,7 @@ def main() -> int:
     cache = json.loads(CACHE.read_text(encoding="utf-8")) if CACHE.exists() else {}
     RAW.mkdir(parents=True, exist_ok=True)
     ALT.mkdir(parents=True, exist_ok=True)
+    PRIMARY.mkdir(parents=True, exist_ok=True)
 
     jobs = []
     for name in NAMES:
@@ -192,7 +194,7 @@ def main() -> int:
             return name, None, "no usable audio"
         # primary from the first (best-ranked) sample
         src, dur, start = good[0]
-        primary = VOICES / f"{name}.mp3"
+        primary = PRIMARY / f"{name}.mp3"
         if not make_clip(src, primary, start):
             return name, None, "clip failed"
         entries = []
@@ -203,7 +205,7 @@ def main() -> int:
             make_clip(s, alt, st)
             entries.append({"file": str(alt.relative_to(VOICES)), "title": title,
                             "source_duration": round(d, 1), "start": round(st, 1)})
-        return name, {"primary": primary.name, "samples": entries}, None
+        return name, {"primary": str(primary.relative_to(VOICES)), "samples": entries}, None
 
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         futs = [ex.submit(process_name, n) for n in NAMES]
@@ -217,7 +219,7 @@ def main() -> int:
 
     (VOICES / "voice_catalog.json").write_text(
         json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"\nDone: {len(catalog)} narrators, primary refs in {VOICES}, alternates in {ALT}")
+    print(f"\nDone: {len(catalog)} narrators, primary refs in {PRIMARY}, alternates in {ALT}")
     return 0
 
 

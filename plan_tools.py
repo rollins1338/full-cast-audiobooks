@@ -24,6 +24,8 @@ from html.parser import HTMLParser
 from pathlib import Path
 from xml.etree import ElementTree
 
+from voice_paths import voice_clip
+
 ROOT = Path(__file__).resolve().parent
 VOICES = ROOT / "voices"
 NARRATION, SKIP, POV_HEADER = "NARRATION", "SKIP", "POV_HEADER"
@@ -235,10 +237,7 @@ def clean_spoken(text):
 
 
 def voice_file(name):
-    for ext in (".mp3", ".wav", ".flac", ".m4a"):
-        if (VOICES / f"{name}{ext}").is_file():
-            return VOICES / f"{name}{ext}"
-    return None
+    return voice_clip(name)
 
 
 def load_book(book_dir):

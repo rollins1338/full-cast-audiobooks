@@ -13,7 +13,7 @@
 # Keep semantic analysis separate from synthesis so the expensive TTS step
 # starts only after the chapter/speaker plan has been reviewed.
 
-import argparse, json, os, re, subprocess, tempfile, time
+import argparse, json, os, re, subprocess, sys, tempfile, time
 from pathlib import Path
 
 # Keep import-time caches in writable temporary locations.
@@ -29,11 +29,12 @@ MODEL = "tts_models/multilingual/multi-dataset/xtts_v2"
 MAX_CHARS = 180
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from voice_paths import voice_clip
+
 VOICE_FILES = {
-    "Savannah Peachwood": ROOT / "voices/Savannah Peachwood.mp3",
-    "Lee Daniels": ROOT / "voices/Lee Daniels.mp3",
-    "Jacob Morgan": ROOT / "voices/Jacob Morgan.mp3",
-    "Teddy Hamilton": ROOT / "voices/Teddy Hamilton.mp3",
+    name: voice_clip(name) or ROOT / "voices" / f"{name}.mp3"
+    for name in ("Savannah Peachwood", "Lee Daniels", "Jacob Morgan", "Teddy Hamilton")
 }
 
 def split_text(text):
@@ -77,7 +78,8 @@ def resolve_reference(value):
         source = candidate.with_name(candidate.name[:-8].replace("_", " ") + ".mp3")
         if source.exists():
             return source
-    return candidate
+    found = voice_clip(candidate.stem)  # plans written before the new/ + old/ split
+    return found or candidate
 
 def output_is_valid(path):
     """Return true only when an existing chapter file is probeable audio."""
@@ -221,10 +223,8 @@ def render(plan_file, output_dir, output_format="wav", sample_rate=24000, channe
                         # local voices directory. Resolve it by cast name so
                         # adding a narrator or supporting actor never requires
                         # editing a hard-coded list in the renderer.
-                        candidate = ROOT / "voices" / f"{voice}.mp3"
-                        if not candidate.is_file():
-                            candidate = ROOT / "voices" / f"{voice}.wav"
-                        if not candidate.is_file():
+                        candidate = voice_clip(voice)
+                        if candidate is None:
                             raise ValueError(f"No voice reference configured for segment speaker/voice: {voice!r}")
                         ref = td / (candidate.stem + "_ref.wav")
                         prep(candidate, ref)

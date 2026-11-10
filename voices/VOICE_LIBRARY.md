@@ -1,6 +1,6 @@
 # Voice library
 
-87 mainstream narrators. Primary refs are 60 s, 48 kHz stereo. Each has 3 alternate clips under `alt/<name>/`.
+87 mainstream narrators. Primary refs are 60 s, 48 kHz stereo, in `new/`. Each has 3 alternate clips under `alt/<name>/`. The older clips (Sep) are in `old/` and work the same way.
 
 | Narrator | Alternates (book titles) |
 |---|---|

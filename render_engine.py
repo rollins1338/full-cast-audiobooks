@@ -21,6 +21,8 @@ from collections import Counter, defaultdict, deque
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from voice_paths import voice_clip
+
 ROOT = Path(__file__).resolve().parent
 VOICES = ROOT / "voices"
 SR = 24000
@@ -87,9 +89,9 @@ def find_voice(name):
     if not p.is_absolute() and (ROOT / p).is_file():
         return (ROOT / p).resolve()
     stem = p.name
-    for ext in ("", ".mp3", ".wav", ".flac", ".m4a", ".ogg"):
-        if (VOICES / f"{stem}{ext}").is_file():
-            return (VOICES / f"{stem}{ext}").resolve()
+    found = voice_clip(stem)
+    if found:
+        return found.resolve()
     if stem.endswith("_ref.wav"):  # legacy prepared-reference names
         return find_voice(stem[:-8].replace("_", " "))
     return None

@@ -149,7 +149,9 @@ mainstream and Podium narrator references:
 python3 download_mainstream_voices.py
 ```
 
-Or drop a clean 30–60 s speech clip per character into `voices/<Name>.mp3`.
+Or drop a clean 30–60 s speech clip per character into `voices/new/<Name>.mp3`
+(the lookups also search `voices/old/` and the top level, so the exact folder
+doesn't matter).
 See [🎙️ Voices](#-voices) for more.
 
 ### 4 · Make the plan
@@ -321,7 +323,7 @@ reviewed the warnings, `--allow-warnings` builds anyway.
 A finished `plan.json` has one segment per line:
 
 ```json
-{"speaker": "Daniel", "voice_ref": "/absolute/path/voices/Daniel.mp3", "text": "Hand me the map."}
+{"speaker": "Daniel", "voice_ref": "/absolute/path/voices/new/Daniel.mp3", "text": "Hand me the map."}
 ```
 
 </details>
@@ -336,6 +338,8 @@ character.
 
 | File | What it is |
 | --- | --- |
+| `voices/new/` | Recent reference clips (lookup checks here first) |
+| `voices/old/` | Older reference clips, still fully usable |
 | `voices/voice_catalog.json` | Every narrator and sample, machine-readable |
 | `voices/VOICE_LIBRARY.md` | The same list, for browsing |
 | `download_mainstream_voices.py` | Fetches the 87 mainstream and Podium narrator clips |
@@ -358,7 +362,7 @@ full-cast-audiobooks/
 ├── 🛠️ plan_tools.py          totext · extract · castvoices · verify · context · compare · prontest · build · stats
 ├── 📚 sources/               your EPUBs (git-ignored)
 ├── 📁 books/<slug>/          per-book extraction, labels and plan.json
-├── 🎙️ voices/                voice catalogue (clips git-ignored)
+├── 🎙️ voices/                voice catalogue, clips in new/ and old/ (git-ignored)
 ├── 🎚️ wav_merger/            chapter merger, ACX mastering, M4B export
 ├── 📦 output/<book>/         finished renders (git-ignored)
 └── 🎨 assets/                README graphics

@@ -22,11 +22,11 @@ MAX_CHARS = 180
 
 
 ROOT = Path(__file__).resolve().parent
+from voice_paths import voice_clip
+
 VOICE_FILES = {
-    "Savannah Peachwood": ROOT / "voices/Savannah Peachwood.mp3",
-    "Lee Daniels": ROOT / "voices/Lee Daniels.mp3",
-    "Jacob Morgan": ROOT / "voices/Jacob Morgan.mp3",
-    "Teddy Hamilton": ROOT / "voices/Teddy Hamilton.mp3",
+    name: voice_clip(name) or ROOT / "voices" / f"{name}.mp3"
+    for name in ("Savannah Peachwood", "Lee Daniels", "Jacob Morgan", "Teddy Hamilton")
 }
 
 

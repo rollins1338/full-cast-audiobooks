@@ -14,6 +14,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
+from voice_paths import voice_clip
+
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="audiobook", description="Render full-cast audiobook speech with local XTTS-v2.")
@@ -54,7 +56,8 @@ def validate(plan_file: Path) -> None:
                 path = path.with_name(path.name[:-8].replace("_", " ") + ".mp3")
         else:
             voice = segment.get("voice")
-            path = ROOT / "voices" / f"{voice}.mp3" if voice else Path("<missing voice>")
+            path = voice_clip(voice) if voice else None
+            path = path or Path("<missing voice>")
         if not path.is_file():
             missing.append(str(path))
     if missing:

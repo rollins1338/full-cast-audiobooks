@@ -328,7 +328,7 @@ python3 plan_tools.py prontest books/<slug> --voice "<voice name>"
 ./render.sh books/<slug>/pron_test/plan.json --out books/<slug>/pron_test --no-blend --yes --plain
 ```
 
-Use the voice you expect to give the Narrator (`ls voices/`); once
+Use the voice you expect to give the Narrator (`ls voices/new voices/old`); once
 `book.json` exists, `--voice` can be left out. You get one `NNN.wav` per
 group in `pron_test/`, with `INDEX.md` listing the lines in each. Run it in
 the background and watch it like a helper; it takes a minute or two. This

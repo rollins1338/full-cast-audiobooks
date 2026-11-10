@@ -1,4 +1,4 @@
-import argparse, json, os, re, subprocess, tempfile, time
+import argparse, json, os, re, subprocess, sys, tempfile, time
 from pathlib import Path
 
 # Keep import-time caches in writable temporary locations.
@@ -14,11 +14,12 @@ MODEL = "tts_models/multilingual/multi-dataset/xtts_v2"
 MAX_CHARS = 180
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from voice_paths import voice_clip
+
 VOICE_FILES = {
-    "Savannah Peachwood": ROOT / "voices/Savannah Peachwood.mp3",
-    "Lee Daniels": ROOT / "voices/Lee Daniels.mp3",
-    "Jacob Morgan": ROOT / "voices/Jacob Morgan.mp3",
-    "Teddy Hamilton": ROOT / "voices/Teddy Hamilton.mp3",
+    name: voice_clip(name) or ROOT / "voices" / f"{name}.mp3"
+    for name in ("Savannah Peachwood", "Lee Daniels", "Jacob Morgan", "Teddy Hamilton")
 }
 
 def split_long_text(text):

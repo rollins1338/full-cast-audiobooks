@@ -41,6 +41,6 @@ kept short. The detail lives in the files below; read only the one for your job.
 | `plan_tools.py` | totext · extract · castvoices · verify · context · compare · prontest · build · stats |
 | `render.sh`, `render_engine.py` | launcher and XTTS-v2 renderer; voice-blends each chapter after rendering (`--no-blend` to skip) |
 | `books/<slug>/` | one folder per book: text, labels, `book.json`, `plan.json`, `progress.md` |
-| `voices/`, `voices/VOICE_LIBRARY.md` | voice catalogue (clips are git-ignored) |
+| `voices/`, `voices/VOICE_LIBRARY.md` | voice catalogue: clips in `voices/new/` (recent) and `voices/old/` (older), both searched by name (clips are git-ignored) |
 | `wav_merger/` | chapter merging, ACX mastering, M4B export |
 | `output/<book>/` | finished renders (git-ignored) |
